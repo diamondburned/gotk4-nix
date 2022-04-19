@@ -43,4 +43,15 @@ result
 `build-package` creates a proper Nix package. It generates the following:
 
 ```
+result
+├── bin
+│   └── gtkcord4
+└── share
+    ├── applications
+    │   └── com.github.diamondburned.gtkcord4.desktop
+    └── icons
+        └── hicolor
+            └── 256x256
+                └── apps
+                    └── gtkcord4.png
 ```
