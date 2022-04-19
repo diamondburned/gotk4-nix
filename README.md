@@ -17,17 +17,18 @@ in import "${src.gotk4-nix}/${action}.nix" {
 Use like so:
 
 ```sh
-nix-build .nix --argstr action cross-build
-nix-build .nix --argstr action package-build
+nix-build .nix --argstr action build-cross
+nix-build .nix --argstr action build-package
 ```
 
 ```nix
 {}: import ./.nix { action = "shell"; }
 ```
 
-### cross-build
+### build-cross
 
-`cross-build` cross-compiles for x86_64 and aarch64. It generates the following:
+`build-package` cross-compiles for Linux x86_64 and aarch64. It generates the
+following:
 
 ```
 result
@@ -37,9 +38,9 @@ result
 └── gtkcord4-nixos-x86_64.tar.gz
 ```
 
-### package-build
+### build-package
 
-`package-buld` creates a proper Nix package. It generates the following:
+`build-package` creates a proper Nix package. It generates the following:
 
 ```
 ```
