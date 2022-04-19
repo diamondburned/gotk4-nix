@@ -13,7 +13,7 @@ in mksh "upload-artifacts"
 	"${./upload-artifacts.sh} \"$@\""
 	(with pkgs; [
 		jq
-		find
 		curl
 		coreutils
+		findutils
 	])
