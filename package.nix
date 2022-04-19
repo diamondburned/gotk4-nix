@@ -32,9 +32,9 @@ in goPkgs.buildGoModule {
 
 	subPackages = baseSubPackages;
 
-	preFixup = ''
+	preFixup = with base.files; ''
 		mkdir -p $out/share/icons/hicolor/256x256/apps/ $out/share/applications/
-		cp "${base.files.desktop}" $out/share/applications/
-		cp "${base.files.logo}" $out/share/icons/hicolor/256x256/apps/
+		cp ${desktop.path} $out/share/applications/${desktop.name}
+		cp ${logo.path} $out/share/icons/hicolor/256x256/apps/${logo.name}
 	'';
 }
