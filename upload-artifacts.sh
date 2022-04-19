@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -e
+set +x
 
 main() {
 	repo="$1"
@@ -15,7 +16,7 @@ main() {
 	release=$(ghcurl "https://api.github.com/repos/$repo/releases/tags/$tag")
 	releaseID=$(jq '.id' <<< "$release")
 	
-	for file in "$files[@]"; {
+	for file in "${files[@]}"; {
 		name=$(basename "$file")
 		ghcurl \
 			-X POST \
@@ -31,10 +32,12 @@ fatal() {
 }
 
 ghcurl() {
-	[[ ! -f ~/.github-token ]] && fatal "Missing token file ~/.github-token."
+	[[ ! $GITHUB_TOKEN ]] && {
+		GITHUB_TOKEN=$(< ~/.github-token) || fatal "Missing token file ~/.github-token."
+	}
 
 	curl \
-		-H "Authorization: token $(< ~/.github-token)" \
+		-H "Authorization: token $GITHUB_TOKEN" \
 		-H "Accept: application/vnd.github.v3+json" \
 		-s \
 		"$@"

@@ -41,7 +41,7 @@ let pkgs = import ./pkgs.nix { useFetched = true; };
 			[[ "$pkg" == "" || "$pkg" == $'\n' ]] && continue
 
 			read -r name path <<< "$pkg"
-			tar -zcvf "$out/${base.pname}-$name.tar.gz" "$path/bin/${base.pname}"
+			tar -zcvf "$out/${base.pname}-$name.tar.gz" -C "$path/bin/" "${base.pname}"
 		}
 	'';
 
