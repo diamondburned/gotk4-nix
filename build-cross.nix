@@ -1,7 +1,9 @@
-{ base }:
+{
+	base,
+	pkgs ? import ./pkgs.nix { useFetched = true; },
+}:
 
-let pkgs = import ./pkgs.nix { useFetched = true; };
-	lib = pkgs.lib;
+let lib = pkgs.lib;
 	
 	shellCopy = pkg: name: attr: sh: pkgs.runCommandLocal
 		name

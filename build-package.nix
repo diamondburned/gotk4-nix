@@ -1,8 +1,9 @@
-{ base }:
+{
+	base,
+	pkgs ? import <nixpkgs> {},
+}:
 
-let pkgs = import <nixpkgs> {};
-
-in import ./package.nix {
+import ./package.nix {
 	inherit pkgs base;
 	lib = pkgs.lib;
 }

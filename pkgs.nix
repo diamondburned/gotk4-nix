@@ -1,12 +1,15 @@
-{ systemChannel ? <nixpkgs>, useFetched ? false }:
+{
+	systemChannel ? <nixpkgs>,
+	sourceNixpkgs ? (import ./src.nix).nixpkgs,
+	useFetched ? false,
+}:
 
 let systemPkgs = import systemChannel {
 		overlays = [ (import ./overlay.nix) ];
 	};
 	lib = systemPkgs.lib;
 
-	src  = import ./src.nix;
-	pkgs = import src.nixpkgs {
+	pkgs = import sourceNixpkgs {
 		overlays = [ (import ./overlay.nix) ];
 	};
 
