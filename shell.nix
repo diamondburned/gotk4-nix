@@ -60,8 +60,8 @@ in pkgs.mkShell {
 	# Workaround for the lack of wrapGAppsHook:
 	# https://nixos.wiki/wiki/Development_environment_with_nix-shell
 	shellHook = with pkgs; with pkgs.gnome; ''
-		XDG_DATA_DIRS=$XDG_DATA_DIRS:${hicolor-icon-theme}/share:${adwaita-icon-theme}/share
-		XDG_DATA_DIRS=$XDG_DATA_DIRS:$GSETTINGS_SCHEMAS_PATH
+		export XDG_DATA_DIRS=$XDG_DATA_DIRS:${hicolor-icon-theme}/share:${adwaita-icon-theme}/share
+		export XDG_DATA_DIRS=$XDG_DATA_DIRS:$GSETTINGS_SCHEMAS_PATH
 	'';
 
 	# For debugging stack traces.
