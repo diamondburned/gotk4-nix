@@ -18,7 +18,7 @@ in goPkgs.buildGoModule {
 	buildInputs = baseBuildInputs buildPkgs ++ (with buildPkgs; [
 		gtk4
 		glib
-		graphene
+		librsvg
 		gdk-pixbuf
 		gobject-introspection
 		hicolor-icon-theme

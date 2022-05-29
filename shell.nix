@@ -27,6 +27,7 @@ in pkgs.mkShell {
 
 	buildInputs = with pkgs; [
 		# Bare minimum required.
+		atk
 		gtk4
 		glib
 		graphene

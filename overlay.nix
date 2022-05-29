@@ -3,7 +3,9 @@ self: super:
 let patchelfer = arch: interpreter: super.writeShellScriptBin
 		"patchelf-${arch}"
 		"${super.patchelf}/bin/patchelf --set-interpreter ${interpreter} \"$@\"";
-	
+
+	lib = super.lib;
+
 in {
 	go = super.go.overrideAttrs (old: {
 		version = "1.18";
@@ -62,6 +64,8 @@ in {
 	# See https://sourceware.org/glibc/wiki/ABIList.
 	patchelf-x86_64  = patchelfer "x86_64"  "/lib64/ld-linux-x86-64.so.2";
 	patchelf-aarch64 = patchelfer "aarch64" "/lib/ld-linux-aarch64.so.1";
+
+	webp-pixbuf-loader = super.callPackage ./packages/webp-pixbuf-loader.nix {};
 
 	# CAUTION, for when I return: uncommenting these will trigger rebuilding a lot of Rust
 	# dependencies, which will take forever! Don't do it!
