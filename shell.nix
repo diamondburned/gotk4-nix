@@ -22,12 +22,16 @@ let src = import ./src.nix;
 	baseBuildInputs = base.buildInputs or (_: []);
 	baseNativeBuildInputs = base.nativeBuildInputs or (_: []);
 
+	# For backwards compatibility.
+	gtk3 = pkgs.gtk3 or pkgs.gnome3.gtk;
+
 in pkgs.mkShell {
 	name = "${base.pname}-nix-shell";
 
 	buildInputs = with pkgs; [
 		# Bare minimum required.
 		atk
+		gtk3
 		gtk4
 		glib
 		graphene
