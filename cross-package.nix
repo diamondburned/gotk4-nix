@@ -1,6 +1,6 @@
-{ GOOS, GOARCH, crossSystem, system, base }:
+{ GOOS, GOARCH, crossSystem, system, base, pkgs }:
 
-let goPkgs = import ./pkgs.nix {};
+let goPkgs = pkgs;
 
 	pkgsSrc = (import ./src.nix).nixpkgs;
 	pkgsWith = attrs: import pkgsSrc attrs;

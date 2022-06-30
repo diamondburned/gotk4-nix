@@ -49,14 +49,14 @@ let lib = pkgs.lib;
 
 	basePkgs = {
 		x86_64 = import ./cross-package.nix {
-			inherit base;
+			inherit base pkgs;
 			GOOS        = "linux";
 			GOARCH      = "amd64";
 			system      = "x86_64-linux";
 			crossSystem = "x86_64-unknown-linux-gnu";
 		};
 		aarch64 = import ./cross-package.nix {
-			inherit base;
+			inherit base pkgs;
 			GOOS        = "linux";
 			GOARCH      = "arm64";
 			system      = "aarch64-linux";
