@@ -6,7 +6,10 @@ main() {
 	repo="$1"
 	[[ ! $repo ]] && fatal 'Missing $1.'
 
-	files=( $(find "${@:2}" -type f) )
+	matches=( "${@:2}" )
+	[[ ${#matches[@]} == 0 ]] && fatal 'No files given.'
+
+	files=( $(find "${matches[@]}" -type f) )
 	[[ ${#files[@]} == 0 ]] && fatal "No files given."
 
 	[[ $GITHUB_REF =~ refs/tags/(.*) ]] \
