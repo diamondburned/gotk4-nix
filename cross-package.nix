@@ -49,4 +49,6 @@ in buildGoModule {
 	]);
 
 	subPackages = [ baseSubPackages ];
+
+	buildFlags = "-buildmode pie";
 }
