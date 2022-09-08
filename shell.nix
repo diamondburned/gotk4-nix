@@ -2,10 +2,13 @@
 	base,
 	pkgs ? import ./pkgs.nix {},
 	buildInputs ? (pkgs: []),
-}:
+	...
+}@args':
 
 let src = import ./src.nix;
 	lib = pkgs.lib;
+
+	args = builtins.removeAttrs args' [ "base" "pkgs" "buildInputs" ];
 
 	# minitime is a mini-output time wrapper.
 	minitime = pkgs.writeShellScriptBin "minitime"
@@ -87,7 +90,7 @@ EOF
 		./dump > $out
 	'';
 
-in pkgs.mkShell {
+in pkgs.mkShell ({
 	name = "${base.pname}-nix-shell";
 
 	buildInputs = buildInputs';
@@ -114,4 +117,4 @@ in pkgs.mkShell {
 	# See https://github.com/NixOS/nix/issues/395.
 	TMP    = "/tmp";
 	TMPDIR = "/tmp";
-}
+} // args)
