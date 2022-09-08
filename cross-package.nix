@@ -2,8 +2,8 @@
 
 let goPkgs = pkgs;
 
-	pkgsSrc = (import ./src.nix).nixpkgs;
-	pkgsWith = attrs: import pkgsSrc attrs;
+	pkgsPath = pkgs.path;
+	pkgsWith = attrs: import pkgsPath attrs;
 	pkgsHost = pkgsWith {};
 
 	ov' = {
@@ -18,7 +18,7 @@ let goPkgs = pkgs;
 		then {  }
 		else { system = system; });
 
-	buildGoModule = goPkgs.callPackage "${pkgsSrc}/pkgs/development/go-modules/generic" {
+	buildGoModule = goPkgs.callPackage "${pkgsPath}/pkgs/development/go-modules/generic" {
 		go = goPkgs.go // { inherit GOOS GOARCH; };
 		stdenv = pkgsCross.stdenv;
 	};
