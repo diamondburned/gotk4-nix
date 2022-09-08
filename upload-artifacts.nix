@@ -1,4 +1,4 @@
-{ base }:
+{ ... }:
 
 let pkgs = import ./pkgs.nix {};
 	mksh = name: text: pkgList: pkgs.writeShellScript name ''
