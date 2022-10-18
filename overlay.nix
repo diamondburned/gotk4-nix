@@ -6,19 +6,22 @@ let patchelfer = arch: interpreter: super.writeShellScriptBin
 
 	lib = super.lib;
 
-in {
-	go = super.go.overrideAttrs (old: {
-		version = "1.18";
+	go119 = super.go_1_19 or (super.go.overrideAttrs (old: {
+		version = "1.19.2";
 		src = builtins.fetchurl {
-			url    = "https://golang.org/dl/go1.18.linux-amd64.tar.gz";
-			sha256 = "0kr6h1ddaazibxfkmw7b7jqyqhskvzjyc2c4zr8b3kapizlphlp8";
+			url    = "https://golang.org/dl/go1.19.2.linux-amd64.tar.gz";
+			sha256 = "1dpfny77vzz34zr71py2v3m50h5vm36ilijs0mzdsw34zrs5m32y";
 		};
 		doCheck = false;
+	}));
+
+in {
+	go = go119.overrideAttrs (old: {
 		patches = [
 			# cmd/go/internal/work: concurrent ccompile routines
-			(builtins.fetchurl "https://github.com/diamondburned/go/commit/ec3e1c9471f170187b6a7c83ab0364253f895c28.patch")
+			(builtins.fetchurl "https://github.com/diamondburned/go/commit/904669ff7906122c03ee67160e094115ebb1f527.patch")
 			# cmd/cgo: concurrent file generation
-			(builtins.fetchurl "https://github.com/diamondburned/go/commit/50e04befeca9ae63296a73c8d5d2870b904971b4.patch")
+			(builtins.fetchurl "https://github.com/diamondburned/go/commit/0ee3ff87e3acd89f13df68a4143517b29d2d7f04.patch")
 		];
 	});
 	gopls = self.buildGoModule rec {
