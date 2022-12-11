@@ -1,4 +1,4 @@
-{ GOOS, GOARCH, crossSystem, system, base, pkgs }:
+{ GOOS, GOARCH, crossSystem, system, base, pkgs, ... }@args:
 
 let goPkgs = pkgs;
 
@@ -27,7 +27,7 @@ let goPkgs = pkgs;
 	baseBuildInputs = base.buildInputs or (_: []);
 	baseNativeBuildInputs = base.nativeBuildInputs or (_: []);
 	
-in buildGoModule {
+in buildGoModule (args // {
 	inherit (base) src version vendorSha256;
 
 	CGO_ENABLED = "1";
@@ -51,4 +51,4 @@ in buildGoModule {
 	subPackages = [ baseSubPackages ];
 
 	buildFlags = "-buildmode pie";
-}
+})

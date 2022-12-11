@@ -1,9 +1,10 @@
 {
 	base,
 	pkgs ? import <nixpkgs> {},
-}:
+	...
+}@args:
 
-import ./package.nix {
+import ./package.nix (args // {
 	inherit pkgs base;
 	lib = pkgs.lib;
-}
+})

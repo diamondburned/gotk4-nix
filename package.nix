@@ -1,18 +1,20 @@
 {
 	pkgs,
-	lib,
 	base, # see package-base.nix.tmpl
 
 	# Optionals.
 	buildPkgs ? import ./pkgs.nix {}, # only for overriding
 	goPkgs ? buildPkgs,
-}:
+	lib ? pkgs.lib,
+
+	...
+}@args:
 
 let baseSubPackages = base.subPackages or [ "." ];
 	baseBuildInputs = base.buildInputs or (_: []);
 	baseNativeBuildInputs = base.nativeBuildInputs or (_: []);
 
-in goPkgs.buildGoModule {
+in goPkgs.buildGoModule (args // {
 	inherit (base) pname src version vendorSha256;
 
 	buildInputs = baseBuildInputs buildPkgs ++ (with buildPkgs; [
@@ -37,4 +39,4 @@ in goPkgs.buildGoModule {
 		cp ${desktop.path} $out/share/applications/${desktop.name}
 		cp ${logo.path} $out/share/icons/hicolor/256x256/apps/${logo.name}
 	'';
-}
+})
