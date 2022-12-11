@@ -37,7 +37,7 @@ let src = import ./src.nix;
 		graphene
 		gdk-pixbuf
 		gobject-introspection
-		pkgconfig
+		pkg-config
 		librsvg
 		# webp-pixbuf-loader
 

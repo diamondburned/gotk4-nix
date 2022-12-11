@@ -26,7 +26,7 @@ in goPkgs.buildGoModule {
 
 	nativeBuildInputs = baseNativeBuildInputs pkgs ++ (with pkgs; [
 		wrapGAppsHook
-		pkgconfig
+		pkg-config
 		git # for Go
 	]);
 

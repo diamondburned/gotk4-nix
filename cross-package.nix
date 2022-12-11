@@ -44,7 +44,7 @@ in buildGoModule {
 	]);
 
 	nativeBuildInputs = (baseNativeBuildInputs goPkgs) ++ (with goPkgs; [
-		pkgconfig
+		pkg-config
 		git # for Go
 	]);
 
