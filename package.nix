@@ -8,11 +8,13 @@
 	lib ? pkgs.lib,
 
 	...
-}@args:
+}@args':
 
 let baseSubPackages = base.subPackages or [ "." ];
 	baseBuildInputs = base.buildInputs or (_: []);
 	baseNativeBuildInputs = base.nativeBuildInputs or (_: []);
+
+	args = builtins.removeAttrs args' [ "pkgs" "lib" "base" ];
 
 in goPkgs.buildGoModule (args // {
 	inherit (base) pname src version vendorSha256;
