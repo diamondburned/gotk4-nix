@@ -16,30 +16,14 @@ let patchelfer = arch: interpreter: super.writeShellScriptBin
 	}));
 
 in {
-	go = go119.overrideAttrs (old: {
-		patches = [
+	go = super.go_1_19.overrideAttrs (old: {
+		patches = (old.patches or []) ++ [
 			# cmd/go/internal/work: concurrent ccompile routines
 			(builtins.fetchurl "https://github.com/diamondburned/go/commit/904669ff7906122c03ee67160e094115ebb1f527.patch")
 			# cmd/cgo: concurrent file generation
 			(builtins.fetchurl "https://github.com/diamondburned/go/commit/0ee3ff87e3acd89f13df68a4143517b29d2d7f04.patch")
 		];
 	});
-	gopls = self.buildGoModule rec {
-		pname = "gopls";
-		version = "0.8.3";
-
-		src = super.fetchgit {
-			rev = "gopls/v0.8.3";
-			url = "https://go.googlesource.com/tools";
-			sha256 = "15gk59np06hc0q7wajxwizn5v9fs404yfz951ggmnzr467lk95az";
-		};
-
-		modRoot = "gopls";
-		vendorSha256 = "0n3alxm6bj4j8av0b6jnwd6zrsffiygpdflbg1lnws4w10ry59m7";
-
-		doCheck = false;
-		subPackages = [ "." ];
-	};
 	buildGoModule = super.buildGoModule.override {
 		inherit (self) go;
 	};
