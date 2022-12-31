@@ -10,14 +10,22 @@
 	...
 }@args':
 
-let baseSubPackages = base.subPackages or [ "." ];
+let args = builtins.removeAttrs args' [ "pkgs" "lib" "base" ];
+
+	baseSubPackages = base.subPackages or [ "." ];
 	baseBuildInputs = base.buildInputs or (_: []);
 	baseNativeBuildInputs = base.nativeBuildInputs or (_: []);
 
-	args = builtins.removeAttrs args' [ "pkgs" "lib" "base" ];
+	builder = if (base ? modules)
+		then goPkgs.buildGoApplication
+		else goPkgs.buildGoModule;
 
-in goPkgs.buildGoModule (args // {
-	inherit (base) pname src version vendorSha256;
+in builder ({
+	inherit (base) pname src version;
+	inherit (goPkgs) go;
+
+	modules = if base ? modules then base.modules else null;
+	vendorSha256 = if base ? vendorSha256 then base.vendorSha256 else null;
 
 	buildInputs = baseBuildInputs buildPkgs ++ (with buildPkgs; [
 		gtk4
@@ -41,4 +49,6 @@ in goPkgs.buildGoModule (args // {
 		cp ${desktop.path} $out/share/applications/${desktop.name}
 		cp ${logo.path} $out/share/icons/hicolor/256x256/apps/${logo.name}
 	'';
-})
+
+	doCheck = false;
+} // args)

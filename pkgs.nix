@@ -5,13 +5,19 @@
 	overlays ? [],
 }:
 
-let systemPkgs = import systemChannel {
-		overlays = [ (import ./overlay.nix) ] ++ overlays;
+let src = import ./nix/sources.nix;
+	ov' = [
+		(import ./overlay.nix)
+		(import "${src.gomod2nix}/overlay.nix")
+	];
+
+	systemPkgs = import systemChannel {
+		overlays = ov' ++ overlays;
 	};
 	lib = systemPkgs.lib;
 
 	pkgs = import sourceNixpkgs {
-		overlays = [ (import ./overlay.nix) ] ++ overlays;
+		overlays = ov' ++ overlays;
 	};
 
 in
