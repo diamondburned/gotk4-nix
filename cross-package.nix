@@ -1,6 +1,6 @@
 { GOOS, GOARCH, crossSystem, system, base, pkgs, ... }@args':
 
-let args = builtins.removeAttrs args' [ "GOOS" "GOARCH" "crossSystem" "system" "base" "pkgs" ];
+let args = builtins.removeAttrs args' [ "crossSystem" "system" "base" "pkgs" ];
 
 	goPkgs = pkgs;
 

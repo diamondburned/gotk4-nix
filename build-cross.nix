@@ -1,13 +1,15 @@
 {
 	base,
 	pkgs ? import ./pkgs.nix { useFetched = true; },
+	tags ? [],
 	target ? null,
 	targets ? [ "x86_64" "aarch64" ],
+	...
 }@args':
 
 let lib = pkgs.lib;
 	args = builtins.removeAttrs args' [
-		"base" "pkgs" "target" "targets"
+		"base" "pkgs" "tags" "target" "targets"
 	];
 	
 	shellCopy = pkg: name: attr: sh: pkgs.runCommandLocal
@@ -54,14 +56,14 @@ let lib = pkgs.lib;
 
 	basePkgs = {
 		x86_64 = import ./cross-package.nix ({
-			inherit base pkgs;
+			inherit base pkgs tags;
 			GOOS        = "linux";
 			GOARCH      = "amd64";
 			system      = "x86_64-linux";
 			crossSystem = "x86_64-unknown-linux-gnu";
 		} // args);
 		aarch64 = import ./cross-package.nix ({
-			inherit base pkgs;
+			inherit base pkgs tags;
 			GOOS        = "linux";
 			GOARCH      = "arm64";
 			system      = "aarch64-linux";
