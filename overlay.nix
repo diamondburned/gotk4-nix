@@ -1,10 +1,6 @@
 self: super:
 
-let patchelfer = arch: interpreter: super.writeShellScriptBin
-		"patchelf-${arch}"
-		"${super.patchelf}/bin/patchelf --set-interpreter ${interpreter} \"$@\"";
-
-	lib = super.lib;
+let	lib = super.lib;
 
 	go119 = super.go_1_19 or (super.go.overrideAttrs (old: {
 		version = "1.19.2";
@@ -48,9 +44,12 @@ in {
 		};
 	};
 
+	patchelfer = arch: interpreter: super.writeShellScriptBin
+		"patchelf-${arch}"
+		"${super.patchelf}/bin/patchelf --set-interpreter ${interpreter} \"$@\"";
 	# See https://sourceware.org/glibc/wiki/ABIList.
-	patchelf-x86_64  = patchelfer "x86_64"  "/lib64/ld-linux-x86-64.so.2";
-	patchelf-aarch64 = patchelfer "aarch64" "/lib/ld-linux-aarch64.so.1";
+	patchelf-x86_64  = self.patchelfer "x86_64"  "/lib64/ld-linux-x86-64.so.2";
+	patchelf-aarch64 = self.patchelfer "aarch64" "/lib/ld-linux-aarch64.so.1";
 
 	webp-pixbuf-loader = super.callPackage ./packages/webp-pixbuf-loader.nix {};
 

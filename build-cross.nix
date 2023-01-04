@@ -1,9 +1,14 @@
 {
 	base,
 	pkgs ? import ./pkgs.nix { useFetched = true; },
-}:
+	target ? "x86_64", # x86_64 or aarch64
+	targets ? [ target ],
+}@args':
 
 let lib = pkgs.lib;
+	args = builtins.removeAttrs args [
+		"base" "pkgs" "target" "targets"
+	];
 	
 	shellCopy = pkg: name: attr: sh: pkgs.runCommandLocal
 		name
@@ -48,27 +53,32 @@ let lib = pkgs.lib;
 	'';
 
 	basePkgs = {
-		x86_64 = import ./cross-package.nix {
+		x86_64 = import ./cross-package.nix ({
 			inherit base pkgs;
 			GOOS        = "linux";
 			GOARCH      = "amd64";
 			system      = "x86_64-linux";
 			crossSystem = "x86_64-unknown-linux-gnu";
-		};
-		aarch64 = import ./cross-package.nix {
+		} // args);
+		aarch64 = import ./cross-package.nix ({
 			inherit base pkgs;
 			GOOS        = "linux";
 			GOARCH      = "arm64";
 			system      = "aarch64-linux";
 			crossSystem = "aarch64-unknown-linux-gnu";
-		};
+		} // args);
 	};
 
-	outputs = with pkgs; {
-		nixos-x86_64  = wrapGApps basePkgs.x86_64;
-		linux-x86_64  = withPatchelf patchelf-x86_64 basePkgs.x86_64;
-		nixos-aarch64 = wrapGApps basePkgs.aarch64;
-		linux-aarch64 = withPatchelf patchelf-aarch64 basePkgs.aarch64;
+	patchelfer = {
+		x86_64  = pkgs.patchelf-x86_64;
+		aarch64 = pkgs.patchelf-aarch64;
 	};
+
+	outputs' = lib.forEach targets (target: {
+		"linux-${target}" = withPatchelf patchelfer.${target} basePkgs.${target};
+		"nixos-${target}" = wrapGApps basePkgs.${target};
+	});
+
+	outputs = lib.foldl (a: b: a // b) {} outputs';
 
 in output "${base.pname}-cross" outputs
