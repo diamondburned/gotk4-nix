@@ -6,7 +6,7 @@
 }@args':
 
 let lib = pkgs.lib;
-	args = builtins.removeAttrs args [
+	args = builtins.removeAttrs args' [
 		"base" "pkgs" "target" "targets"
 	];
 	
