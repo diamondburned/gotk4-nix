@@ -1,8 +1,8 @@
 {
 	base,
 	pkgs ? import ./pkgs.nix { useFetched = true; },
-	target ? "x86_64", # x86_64 or aarch64
-	targets ? [ target ],
+	target ? null,
+	targets ? [ "x86_64" "aarch64" ],
 }@args':
 
 let lib = pkgs.lib;
@@ -74,7 +74,12 @@ let lib = pkgs.lib;
 		aarch64 = pkgs.patchelf-aarch64;
 	};
 
-	outputs' = lib.forEach targets (target: {
+	targets' =
+		if target != null
+		then if builtins.isList target then target else [ target ]
+		else targets;
+
+	outputs' = lib.forEach targets' (target: {
 		"linux-${target}" = withPatchelf patchelfer.${target} basePkgs.${target};
 		"nixos-${target}" = wrapGApps basePkgs.${target};
 	});
