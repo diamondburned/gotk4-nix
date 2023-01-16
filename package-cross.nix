@@ -1,6 +1,7 @@
-{ GOOS, GOARCH, crossSystem, system, base, pkgs, ... }@args':
+{ GOOS, GOARCH, crossSystem, system, base, pkgs, rev ? null, ... }@args':
 
 let args = builtins.removeAttrs args' [ "crossSystem" "system" "base" "pkgs" ];
+	util = import ./util.nix pkgs;
 
 	goPkgs = pkgs;
 
@@ -36,23 +37,27 @@ let args = builtins.removeAttrs args' [ "crossSystem" "system" "base" "pkgs" ];
 	gomod2nix_builder = goPkgs.callPackage "${sources.gomod2nix}/builder" {
 		stdenv = pkgsCross.stdenv;
 	};
-	buildGoPackage = gomod2nix_builder.buildGoApplication;
+	buildGoApplication = gomod2nix_builder.buildGoApplication;
 
 	baseSubPackages = base.subPackages or [ "." ];
 	baseBuildInputs = base.buildInputs or (_: []);
 	baseNativeBuildInputs = base.nativeBuildInputs or (_: []);
 
-	builder = if (base.modules != null)
-		then buildGoPackage
+	builder = if (base ? modules)
+		then buildGoApplication
 		else buildGoModule;
 	
-in builder ({
-	inherit (base) src version modules vendorSha256;
+in builder (rec {
+	inherit (base) src;
 	inherit go;
 
 	CGO_ENABLED = "1";
 
-	pname = base.pname + "-${GOOS}-${GOARCH}";
+	name = "${base.pname}-${version}-${GOOS}-${GOARCH}";
+	version = util.optionalVersion base rev;
+
+	modules = if (base ? modules) then base.modules else null;
+	vendorSha256 = if (base ? vendorSha256) then base.vendorSha256 else null;
 
 	buildInputs = (baseBuildInputs pkgsTarget) ++ (with pkgsTarget; [
 		gtk4
@@ -71,6 +76,12 @@ in builder ({
 	subPackages = [ baseSubPackages ];
 
 	buildFlags = "-buildmode pie";
+
+	preFixup = with base.files; ''
+		mkdir -p $out/share/icons/hicolor/256x256/apps/ $out/share/applications/
+		cp ${desktop.path} $out/share/applications/${desktop.name}
+		cp ${logo.path} $out/share/icons/hicolor/256x256/apps/${logo.name}
+	'';
 
 	doCheck = false;
 } // args)

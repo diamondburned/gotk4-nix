@@ -6,11 +6,13 @@
 	buildPkgs ? import ./pkgs.nix {}, # only for overriding
 	goPkgs ? buildPkgs,
 	lib ? pkgs.lib,
+	rev ? null,
 
 	...
 }@args':
 
 let args = builtins.removeAttrs args' [ "pkgs" "lib" "base" ];
+	util = import ./util.nix pkgs;
 
 	baseSubPackages = base.subPackages or [ "." ];
 	baseBuildInputs = base.buildInputs or (_: []);
@@ -20,9 +22,12 @@ let args = builtins.removeAttrs args' [ "pkgs" "lib" "base" ];
 		then goPkgs.buildGoApplication
 		else goPkgs.buildGoModule;
 
-in builder ({
-	inherit (base) pname src version;
+in builder (rec {
+	inherit (base) src;
 	inherit (goPkgs) go;
+
+	name = "${base.pname}-${version}";
+	version = util.optionalVersion base rev;
 
 	modules = if base ? modules then base.modules else null;
 	vendorSha256 = if base ? vendorSha256 then base.vendorSha256 else null;
@@ -43,6 +48,8 @@ in builder ({
 	]);
 
 	subPackages = baseSubPackages;
+
+	buildFlags = "-buildmode pie";
 
 	preFixup = with base.files; ''
 		mkdir -p $out/share/icons/hicolor/256x256/apps/ $out/share/applications/

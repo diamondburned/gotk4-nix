@@ -50,24 +50,27 @@ let lib = pkgs.lib;
 			[[ "$pkg" == "" || "$pkg" == $'\n' ]] && continue
 
 			read -r name path <<< "$pkg"
-			tar -zcvf "$out/${base.pname}-$name.tar.gz" -C "$path/bin/" "${base.pname}"
+			tar -zcvhf "$out/${base.pname}-$name.tar.gz" -C "$path" .
 		}
 	'';
 
-	basePkgs = {
-		x86_64 = import ./cross-package.nix ({
+	linuxPkgs = {
+		x86_64 = import ./package-cross.nix ({
 			inherit base pkgs tags;
 			GOOS        = "linux";
 			GOARCH      = "amd64";
 			system      = "x86_64-linux";
 			crossSystem = "x86_64-unknown-linux-gnu";
 		} // args);
-		aarch64 = import ./cross-package.nix ({
+		aarch64 = import ./package-cross.nix ({
 			inherit base pkgs tags;
 			GOOS        = "linux";
 			GOARCH      = "arm64";
 			system      = "aarch64-linux";
 			crossSystem = "aarch64-unknown-linux-gnu";
+		} // args);
+		source = import ./package-cross ({
+			inherit base pkgs;
 		} // args);
 	};
 
@@ -82,8 +85,10 @@ let lib = pkgs.lib;
 		else targets;
 
 	outputs' = lib.forEach targets' (target: {
-		"linux-${target}" = withPatchelf patchelfer.${target} basePkgs.${target};
-		"nixos-${target}" = wrapGApps basePkgs.${target};
+		"linux-${target}" = withPatchelf patchelfer.${target} linuxPkgs.${target};
+
+		# This isn't very useful.
+		# "nixos-${target}" = wrapGApps linuxPkgs.${target};
 	});
 
 	outputs = lib.foldl (a: b: a // b) {} outputs';
