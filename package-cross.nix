@@ -1,4 +1,4 @@
-{ GOOS, GOARCH, crossSystem, system, base, pkgs, rev ? null, ... }@args':
+{ GOOS, GOARCH, crossSystem, system, base, pkgs, version ? null, ... }@args':
 
 let args = builtins.removeAttrs args' [ "crossSystem" "system" "base" "pkgs" ];
 	util = import ./util.nix pkgs;
@@ -47,14 +47,13 @@ let args = builtins.removeAttrs args' [ "crossSystem" "system" "base" "pkgs" ];
 		then buildGoApplication
 		else buildGoModule;
 	
-in builder (rec {
-	inherit (base) src;
+in builder ({
+	inherit (base) pname src;
 	inherit go;
 
 	CGO_ENABLED = "1";
 
-	name = "${base.pname}-${version}-${GOOS}-${GOARCH}";
-	version = util.optionalVersion base rev;
+	version = "${util.optionalVersion base version}-${GOOS}-${GOARCH}";
 
 	modules = if (base ? modules) then base.modules else null;
 	vendorSha256 = if (base ? vendorSha256) then base.vendorSha256 else null;

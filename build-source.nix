@@ -1,15 +1,15 @@
 {
 	base,
 	pkgs ? import ./pkgs.nix { useFetched = true; },
-	rev ? null,
+	version ? null,
 	...
 }@args':
 
 let args = builtins.removeAttrs args [ "pkgs" "base" "rev" ];
 	util = import ./util.nix pkgs;
 
-	version = util.optionalVersion base rev;
-	name = "${base.pname}-${version}-source";
+	version' = util.optionalVersion base version;
+	name = "${base.pname}-${version'}-source";
 
 	src = builtins.filterSource
 		(path: type:

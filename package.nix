@@ -6,7 +6,7 @@
 	buildPkgs ? import ./pkgs.nix {}, # only for overriding
 	goPkgs ? buildPkgs,
 	lib ? pkgs.lib,
-	rev ? null,
+	version ? null,
 
 	...
 }@args':
@@ -22,12 +22,11 @@ let args = builtins.removeAttrs args' [ "pkgs" "lib" "base" ];
 		then goPkgs.buildGoApplication
 		else goPkgs.buildGoModule;
 
-in builder (rec {
-	inherit (base) src;
+in builder ({
+	inherit (base) pname src;
 	inherit (goPkgs) go;
 
-	name = "${base.pname}-${version}";
-	version = util.optionalVersion base rev;
+	version = util.optionalVersion base version;
 
 	modules = if base ? modules then base.modules else null;
 	vendorSha256 = if base ? vendorSha256 then base.vendorSha256 else null;

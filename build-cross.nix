@@ -81,7 +81,10 @@ let lib = pkgs.lib;
 
 	targets' =
 		if target != null
-		then if builtins.isList target then target else [ target ]
+		then
+			if builtins.isList target
+			then target
+			else [ target ]
 		else targets;
 
 	outputs' = lib.forEach targets' (target: {
