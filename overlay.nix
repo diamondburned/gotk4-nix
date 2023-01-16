@@ -12,7 +12,8 @@ let	lib = super.lib;
 	}));
 
 in {
-	go = super.go_1_19.overrideAttrs (old: {
+	go = go119.overrideAttrs (old: {
+		version = "${old.version}-cgo-parallel";
 		patches = (old.patches or []) ++ [
 			# cmd/go/internal/work: concurrent ccompile routines
 			(builtins.fetchurl "https://github.com/diamondburned/go/commit/904669ff7906122c03ee67160e094115ebb1f527.patch")
