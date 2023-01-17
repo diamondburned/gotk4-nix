@@ -1,6 +1,17 @@
-{ GOOS, GOARCH, crossSystem, system, base, pkgs, version ? null, ... }@args':
+{
+	crossSystem, system, base, pkgs,
+	GOOS, GOARCH,
+	tags ? [], version ? null,
+	...
+}@args':
 
-let args = builtins.removeAttrs args' [ "crossSystem" "system" "base" "pkgs" ];
+with pkgs.lib;
+with builtins;
+
+let args = builtins.removeAttrs args' [
+		"crossSystem" "system" "base" "pkgs"
+		"tags" "version"
+	];
 	util = import ./util.nix pkgs;
 
 	goPkgs = pkgs;
@@ -49,11 +60,13 @@ let args = builtins.removeAttrs args' [ "crossSystem" "system" "base" "pkgs" ];
 	
 in builder ({
 	inherit (base) pname src;
-	inherit go;
+	inherit go tags;
 
 	CGO_ENABLED = "1";
 
-	version = "${util.optionalVersion base version}-${GOOS}-${GOARCH}";
+	version = "${util.optionalVersion base version}" +
+		"-${GOOS}-${GOARCH}" +
+		(optionalString (tags != []) "-${concatStringsSep "+" tags}");
 
 	modules = if (base ? modules) then base.modules else null;
 	vendorSha256 = if (base ? vendorSha256) then base.vendorSha256 else null;

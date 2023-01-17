@@ -2,8 +2,8 @@
 	base,
 	pkgs ? import ./pkgs.nix { useFetched = true; },
 	version ? null,
-	...
-}@args':
+	pkgOpts ? {},
+}:
 
 let args = builtins.removeAttrs args [ "pkgs" "base" "rev" ];
 	util = import ./util.nix pkgs;
@@ -20,7 +20,9 @@ let args = builtins.removeAttrs args [ "pkgs" "base" "rev" ];
 		)
 		base.src;
 
-	package = import ./package.nix args';
+	package = import ./package.nix (pkgOpts // {
+		inherit base pkgs version;
+	});
 
 	vendor = pkgs.linkFarm "${name}-vendor" [
 		{ name = "vendor"; path = package.vendorEnv; }

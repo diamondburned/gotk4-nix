@@ -5,14 +5,14 @@
 	# Optionals.
 	buildPkgs ? import ./pkgs.nix {}, # only for overriding
 	goPkgs ? buildPkgs,
-	lib ? pkgs.lib,
 	version ? null,
+	tags ? [],
+}:
 
-	...
-}@args':
+with pkgs.lib;
+with builtins;
 
-let args = builtins.removeAttrs args' [ "pkgs" "lib" "base" ];
-	util = import ./util.nix pkgs;
+let util = import ./util.nix pkgs;
 
 	baseSubPackages = base.subPackages or [ "." ];
 	baseBuildInputs = base.buildInputs or (_: []);
@@ -22,11 +22,12 @@ let args = builtins.removeAttrs args' [ "pkgs" "lib" "base" ];
 		then goPkgs.buildGoApplication
 		else goPkgs.buildGoModule;
 
-in builder ({
+in builder {
 	inherit (base) pname src;
 	inherit (goPkgs) go;
 
-	version = util.optionalVersion base version;
+	version = "${util.optionalVersion base version}" +
+		(optionalString (tags != []) "-${concatStringsSep "+" tags}");
 
 	modules = if base ? modules then base.modules else null;
 	vendorSha256 = if base ? vendorSha256 then base.vendorSha256 else null;
@@ -57,4 +58,4 @@ in builder ({
 	'';
 
 	doCheck = false;
-} // args)
+}

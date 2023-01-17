@@ -25,21 +25,23 @@ let lib = pkgs.lib;
 			${sh}
 		'';
 
-	wrapGApps = pkg: shellCopy pkg (pkg.name + "-nixos") {
-		nativeBuildInputs = with pkgs; [
-			wrapGAppsHook
-		];
-	} "";
+	# wrapGApps = pkg: shellCopy pkg (pkg.name + "-nixos") {
+	# 	nativeBuildInputs = with pkgs; [
+	# 		wrapGAppsHook
+	# 	];
+	# } "";
 
-	withPatchelf = patchelf: pkg: shellCopy pkg
-		"${pkg.name}-${patchelf.name}" {}
-		"${patchelf}/bin/${patchelf.name} $out/bin/*";
+	withPatchelf = patchelf: pkg: pkg.overrideAttrs (old: {
+		postInstall = (old.postInstall or "") + ''
+			${patchelf}/bin/${patchelf.name} $out/bin/*
+		'';
+	});
 
 	output = name: packages: pkgs.runCommandLocal name {
 		# Join the object of name to packages into a line-delimited list of strings.
 		src = with lib; foldr
 			(a: b: a + "\n" + b) ""
-			(mapAttrsToList (name: pkg: "${name} ${pkg.outPath}") packages);
+			(mapAttrsToList (name: pkg: "${pkg.name} ${pkg.outPath}") packages);
 		buildInputs = with pkgs; [ coreutils ];
 	} ''
 		mkdir -p $out
@@ -50,7 +52,7 @@ let lib = pkgs.lib;
 			[[ "$pkg" == "" || "$pkg" == $'\n' ]] && continue
 
 			read -r name path <<< "$pkg"
-			tar -zcvhf "$out/${base.pname}-$name.tar.gz" -C "$path" .
+			tar -zcvhf "$out/$name.tar.gz" -C "$path" .
 		}
 	'';
 
@@ -68,9 +70,6 @@ let lib = pkgs.lib;
 			GOARCH      = "arm64";
 			system      = "aarch64-linux";
 			crossSystem = "aarch64-unknown-linux-gnu";
-		} // args);
-		source = import ./package-cross ({
-			inherit base pkgs;
 		} // args);
 	};
 
