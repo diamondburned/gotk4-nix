@@ -7,8 +7,10 @@
 	...
 }@args':
 
-let lib = pkgs.lib;
-	args = builtins.removeAttrs args' [
+with pkgs.lib;
+with builtins;
+
+let args = builtins.removeAttrs args' [
 		"base" "pkgs" "tags" "target" "targets"
 	];
 	
@@ -39,9 +41,19 @@ let lib = pkgs.lib;
 
 	output = name: packages: pkgs.runCommandLocal name {
 		# Join the object of name to packages into a line-delimited list of strings.
-		src = with lib; foldr
+		src = foldr
 			(a: b: a + "\n" + b) ""
-			(mapAttrsToList (name: pkg: "${pkg.name} ${pkg.outPath}") packages);
+			(mapAttrsToList
+				(name: pkg: with pkg;
+					let name = concatStringsSep "-" [
+							pname
+							GOOS
+							GOARCH
+							version
+						];
+						v = name + " " + outPath;
+					in builtins.trace "build-cross: will make ${name}.tar.zst" v)
+				packages);
 		buildInputs = with pkgs; [
 			coreutils
 			zstd
@@ -89,13 +101,13 @@ let lib = pkgs.lib;
 			else [ target ]
 		else targets;
 
-	outputs' = lib.forEach targets' (target: {
+	outputs' = forEach targets' (target: {
 		"linux-${target}" = withPatchelf patchelfer.${target} linuxPkgs.${target};
 
 		# This isn't very useful.
 		# "nixos-${target}" = wrapGApps linuxPkgs.${target};
 	});
 
-	outputs = lib.foldl (a: b: a // b) {} outputs';
+	outputs = foldl (a: b: a // b) {} outputs';
 
 in output "${base.pname}-cross" outputs

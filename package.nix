@@ -11,10 +11,9 @@
 
 with pkgs.lib;
 with builtins;
+with import ./util.nix pkgs;
 
-let util = import ./util.nix pkgs;
-
-	baseSubPackages = base.subPackages or [ "." ];
+let baseSubPackages = base.subPackages or [ "." ];
 	baseBuildInputs = base.buildInputs or (_: []);
 	baseNativeBuildInputs = base.nativeBuildInputs or (_: []);
 
@@ -26,7 +25,8 @@ in builder {
 	inherit (base) pname src;
 	inherit (goPkgs) go;
 
-	version = "${util.optionalVersion base version}" +
+	version =
+		(optionalVersion base version) +
 		(optionalString (tags != []) "-${concatStringsSep "+" tags}");
 
 	modules = if base ? modules then base.modules else null;

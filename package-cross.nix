@@ -7,12 +7,12 @@
 
 with pkgs.lib;
 with builtins;
+with import ./util.nix pkgs;
 
 let args = builtins.removeAttrs args' [
 		"crossSystem" "system" "base" "pkgs"
 		"tags" "version"
 	];
-	util = import ./util.nix pkgs;
 
 	goPkgs = pkgs;
 
@@ -64,8 +64,8 @@ in builder ({
 
 	CGO_ENABLED = "1";
 
-	version = "${util.optionalVersion base version}" +
-		"-${GOOS}-${GOARCH}" +
+	version =
+		(optionalVersion base version) +
 		(optionalString (tags != []) "-${concatStringsSep "+" tags}");
 
 	modules = if (base ? modules) then base.modules else null;
