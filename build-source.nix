@@ -36,7 +36,12 @@ let args = builtins.removeAttrs args [ "pkgs" "base" "rev" ];
 		];
 	};
 
-in pkgs.runCommandLocal name {} ''
+in pkgs.runCommandLocal name {
+	buildInputs = with pkgs; [
+		coreutils
+		zstd
+	];
+} ''
 	mkdir $out
-	tar -zcvhf "$out/${name}.tar.gz" -C "${output}" .
+	tar --zstd -vchf "$out/${name}.tar.zst" -C "${output}" .
 ''

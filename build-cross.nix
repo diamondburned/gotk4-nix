@@ -22,7 +22,7 @@ let lib = pkgs.lib;
 			mkdir -p $out
 			cp -rf $src/* $out/
 			chmod -R +w $out
-			${sh}
+		${sh}
 		'';
 
 	# wrapGApps = pkg: shellCopy pkg (pkg.name + "-nixos") {
@@ -42,7 +42,10 @@ let lib = pkgs.lib;
 		src = with lib; foldr
 			(a: b: a + "\n" + b) ""
 			(mapAttrsToList (name: pkg: "${pkg.name} ${pkg.outPath}") packages);
-		buildInputs = with pkgs; [ coreutils ];
+		buildInputs = with pkgs; [
+			coreutils
+			zstd
+		];
 	} ''
 		mkdir -p $out
 
@@ -52,7 +55,7 @@ let lib = pkgs.lib;
 			[[ "$pkg" == "" || "$pkg" == $'\n' ]] && continue
 
 			read -r name path <<< "$pkg"
-			tar -zcvhf "$out/$name.tar.gz" -C "$path" .
+			tar --zstd -vchf "$out/$name.tar.zst" -C "$path" .
 		}
 	'';
 
