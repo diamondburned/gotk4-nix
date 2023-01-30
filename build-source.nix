@@ -9,7 +9,7 @@ let args = builtins.removeAttrs args [ "pkgs" "base" "rev" ];
 	util = import ./util.nix pkgs;
 
 	version' = util.optionalVersion base version;
-	name = "${base.pname}-${version'}-source";
+	name = "${base.pname}-source-${version'}";
 
 	src = builtins.filterSource
 		(path: type:
