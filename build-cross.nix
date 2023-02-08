@@ -13,25 +13,6 @@ with builtins;
 let args = builtins.removeAttrs args' [
 		"base" "pkgs" "tags" "target" "targets"
 	];
-	
-	shellCopy = pkg: name: attr: sh: pkgs.runCommandLocal
-		name
-		({
-			src = pkg.outPath;
-			buildInputs = pkg.buildInputs;
-		} // attr)
-		''
-			mkdir -p $out
-			cp -rf $src/* $out/
-			chmod -R +w $out
-		${sh}
-		'';
-
-	# wrapGApps = pkg: shellCopy pkg (pkg.name + "-nixos") {
-	# 	nativeBuildInputs = with pkgs; [
-	# 		wrapGAppsHook
-	# 	];
-	# } "";
 
 	withPatchelf = patchelf: pkg: pkg.overrideAttrs (old: {
 		postInstall = (old.postInstall or "") + ''
@@ -67,7 +48,9 @@ let args = builtins.removeAttrs args' [
 			[[ "$pkg" == "" || "$pkg" == $'\n' ]] && continue
 
 			read -r name path <<< "$pkg"
-			tar --zstd -vchf "$out/$name.tar.zst" -C "$path" .
+
+			# Fix issue #3 permission too strict.
+			tar --zstd -vchf "$out/$name.tar.zst" -C "$path" --mode "a+rwX" .
 		}
 	'';
 
