@@ -26,19 +26,19 @@ let args = builtins.removeAttrs args' [
 			(a: b: a + "\n" + b) ""
 			(mapAttrsToList
 				(name: pkg: with pkg;
-					let name = concatStringsSep "-" [
-							pname
-							GOOS
-							GOARCH
-							version
-						];
-						v = name + " " + outPath;
-					in builtins.trace "build-cross: will make ${name}.tar.zst" v)
-				packages);
+					builtins.trace
+						"build-cross: will make ${name}.tar.zst"
+						(name + " " + outPath)
+				)
+				packages
+			);
 		buildInputs = with pkgs; [
 			coreutils
 			zstd
 		];
+		passthru = {
+			outputs = packages;
+		};
 	} ''
 		mkdir -p $out
 
@@ -84,12 +84,18 @@ let args = builtins.removeAttrs args' [
 			else [ target ]
 		else targets;
 
-	outputs' = forEach targets' (target: {
-		"linux-${target}" = withPatchelf patchelfer.${target} linuxPkgs.${target};
-
-		# This isn't very useful.
-		# "nixos-${target}" = wrapGApps linuxPkgs.${target};
-	});
+	outputs' = forEach targets' (target:
+		let pkg  = linuxPkgs.${target};
+			name = concatStringsSep "-" (with pkg; [
+				pname
+				GOOS
+				GOARCH
+				version
+			]);
+		in {
+			"${name}" = withPatchelf patchelfer.${target} pkg;
+		}
+	);
 
 	outputs = foldl (a: b: a // b) {} outputs';
 
