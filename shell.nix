@@ -48,7 +48,6 @@ let src = import ./src.nix;
 		go
 		gopls
 		gotools
-		dominikh.gotools
 
 		git
 
