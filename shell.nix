@@ -1,5 +1,9 @@
 {
-	base,
+	base ? {
+		pname = "gotk4-unnamed";
+		buildInputs = (_: []);
+		nativeBuildInputs = (_: []);
+	},
 	pkgs ? import ./pkgs.nix {},
 	buildInputs ? (pkgs: []),
 	...

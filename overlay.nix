@@ -1,25 +1,21 @@
 self: super:
 
 let	lib = super.lib;
+	sources = import ./nix/sources.nix {};
+	nixpkgs = import sources.nixpkgs {};
 
-	go119 = super.go_1_19 or (super.go.overrideAttrs (old: {
-		version = "1.19.2";
-		src = builtins.fetchurl {
-			url    = "https://golang.org/dl/go1.19.2.linux-amd64.tar.gz";
-			sha256 = "1dpfny77vzz34zr71py2v3m50h5vm36ilijs0mzdsw34zrs5m32y";
-		};
-		doCheck = false;
-	}));
+	go120 = super.go_1_20 or nixpkgs.go_1_20;
 
 in {
-	go = go119.overrideAttrs (old: {
+	go = go120.overrideAttrs (old: {
 		version = "${old.version}-cgo-parallel";
 		patches = (old.patches or []) ++ [
 			# cmd/go/internal/work: concurrent ccompile routines
-			(builtins.fetchurl "https://github.com/diamondburned/go/commit/904669ff7906122c03ee67160e094115ebb1f527.patch")
+			(builtins.fetchurl "https://github.com/diamondburned/go/commit/22f7e1a0a279ff29a6b07bf3002376da12113b58.patch")
 			# cmd/cgo: concurrent file generation
-			(builtins.fetchurl "https://github.com/diamondburned/go/commit/0ee3ff87e3acd89f13df68a4143517b29d2d7f04.patch")
+			(builtins.fetchurl "https://github.com/diamondburned/go/commit/f80609cba09a92b8deec039f424813fc366b592b.patch")
 		];
+		doCheck = false;
 	});
 	buildGoModule = super.buildGoModule.override {
 		inherit (self) go;
