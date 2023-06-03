@@ -9,7 +9,8 @@
 	...
 }@args':
 
-let src = import ./src.nix;
+let
+	src = import ./src.nix;
 	lib = pkgs.lib;
 
 	args = builtins.removeAttrs args' [ "base" "pkgs" "buildInputs" ];

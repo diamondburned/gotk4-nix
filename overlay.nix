@@ -1,25 +1,36 @@
 self: super:
 
-let	lib = super.lib;
+let
+	lib = super.lib;
 	sources = import ./nix/sources.nix {};
 	nixpkgs = import sources.nixpkgs {};
 
-	go120 = super.go_1_20 or nixpkgs.go_1_20;
+	gotk4-nix = super.__gotk4-nix;
+	go_1_20 = super.go_1_20 or nixpkgs.go_1_20;
 
 in {
-	go = go120.overrideAttrs (old: {
-		version = "${old.version}-cgo-parallel";
-		patches = (old.patches or []) ++ [
-			# cmd/go/internal/work: concurrent ccompile routines
-			(builtins.fetchurl "https://github.com/diamondburned/go/commit/22f7e1a0a279ff29a6b07bf3002376da12113b58.patch")
-			# cmd/cgo: concurrent file generation
-			(builtins.fetchurl "https://github.com/diamondburned/go/commit/f80609cba09a92b8deec039f424813fc366b592b.patch")
-		];
-		doCheck = false;
-	});
+	inherit go_1_20;
+
+	go =
+		if gotk4-nix.usePatchedGo then
+			lib.warn "Using patched Go. Builds may be unstable and unreproducible. Only use this for development."
+				go_1_20.overrideAttrs (old: {
+					version = "${old.version}-cgo-parallel";
+					patches = (old.patches or []) ++ [
+						# cmd/go/internal/work: concurrent ccompile routines
+						(builtins.fetchurl "https://github.com/diamondburned/go/commit/22f7e1a0a279ff29a6b07bf3002376da12113b58.patch")
+						# cmd/cgo: concurrent file generation
+						(builtins.fetchurl "https://github.com/diamondburned/go/commit/f80609cba09a92b8deec039f424813fc366b592b.patch")
+					];
+					doCheck = false;
+				})
+		else
+			super.go;
+
 	buildGoModule = super.buildGoModule.override {
 		inherit (self) go;
 	};
+
 	gotools = super.gotools; # TODO
 
 	dominikh = {

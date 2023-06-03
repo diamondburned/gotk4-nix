@@ -2,11 +2,17 @@
 	systemChannel ? <nixpkgs>,
 	sourceNixpkgs ? (import ./src.nix).nixpkgs,
 	useFetched ? false,
+	usePatchedGo ? false,
 	overlays ? [],
 }:
 
 let src = import ./nix/sources.nix;
 	ov' = [
+		(self: super: {
+			__gotk4-nix = {
+				inherit usePatchedGo;
+			};
+		})
 		(import ./overlay.nix)
 		(import "${src.gomod2nix}/overlay.nix")
 	];

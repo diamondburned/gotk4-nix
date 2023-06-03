@@ -1,7 +1,7 @@
 {
 	crossSystem, system, base, pkgs,
 	GOOS, GOARCH,
-	tags ? [], version ? null,
+	tags ? [], version ? null, usePatchedGo ? false,
 	...
 }@args':
 
@@ -23,6 +23,11 @@ let args = builtins.removeAttrs args' [
 	sources = import ./nix/sources.nix;
 	ov' = {
 		overlays = [
+			(self: super: {
+				__gotk4-nix = {
+					inherit usePatchedGo;
+				};
+			})
 			(import ./overlay.nix)
 			(import "${sources.gomod2nix}/overlay.nix")
 		];
