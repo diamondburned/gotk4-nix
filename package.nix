@@ -13,7 +13,8 @@ with pkgs.lib;
 with builtins;
 with import ./util.nix pkgs;
 
-let baseSubPackages = base.subPackages or [ "." ];
+let
+	baseSubPackages = base.subPackages or [ "." ];
 	baseBuildInputs = base.buildInputs or (_: []);
 	baseNativeBuildInputs = base.nativeBuildInputs or (_: []);
 
@@ -51,11 +52,22 @@ in builder {
 
 	buildFlags = "-buildmode pie";
 
-	preFixup = with base.files; ''
-		mkdir -p $out/share/icons/hicolor/256x256/apps/ $out/share/applications/
-		cp ${desktop.path} $out/share/applications/${desktop.name}
-		cp ${logo.path} $out/share/icons/hicolor/256x256/apps/${logo.name}
-	'';
+	preFixup =
+		with builtins;
+		with lib;
+		with base.files;
+		optionalString (hasAttr base.files "desktop") ''
+			mkdir -p $out/share/applications/
+			cp ${desktop.path} $out/share/applications/${desktop.name}
+		'' +
+		optionalString (hasAttr base.files "logo") ''
+			mkdir -p $out/share/icons/hicolor/256x256/apps/
+			cp ${logo.path} $out/share/icons/hicolor/256x256/apps/${logo.name}
+		'' +
+		optionalString (hasAttr base.files "service") ''
+			mkdir -p $out/share/dbus-1/services/
+			cp ${service.path} $out/share/dbus-1/services/${service.name}
+		'';
 
 	doCheck = false;
 }
