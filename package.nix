@@ -53,8 +53,6 @@ in builder {
 	buildFlags = "-buildmode pie";
 
 	preFixup =
-		with builtins;
-		with lib;
 		with base.files;
 		optionalString (hasAttr base.files "desktop") ''
 			mkdir -p $out/share/applications/
