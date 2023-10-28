@@ -1,6 +1,6 @@
 {
 	systemChannel ? <nixpkgs>,
-	sourceNixpkgs ? (import ./src.nix).nixpkgs,
+	sourceNixpkgs ? <nixpkgs>,
 	useFetched ? false,
 	usePatchedGo ? false,
 	overlays ? [],
