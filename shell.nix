@@ -94,18 +94,37 @@ EOF
 		./dump > $out
 	'';
 
-in pkgs.mkShell ({
+in pkgs.mkShell (rec {
 	name = "${base.pname}-nix-shell";
 
 	buildInputs = buildInputs';
+
+	cPackages = [
+		"gtk4"
+		"gtk+-3.0"
+	];
 
 	shellHook = with pkgs.gnome; with pkgs; ''
 		while read -r key value; do
 			export $key=''${!key}''${!key:+:}$value
 		done < ${gotk4-env}
+
 		export GDK_PIXBUF_MODULE_FILE='${librsvg}/lib/gdk-pixbuf-2.0/2.10.0/loaders.cache'
 		export XDG_DATA_DIRS=$XDG_DATA_DIRS:${hicolor-icon-theme}/share:${adwaita-icon-theme}/share
 		export XDG_DATA_DIRS=$XDG_DATA_DIRS:$GSETTINGS_SCHEMAS_PATH
+
+		for pkg in ${pkgs.lib.concatStringsSep " " cPackages}; do
+			__cpath=$(pkg-config $pkg --cflags-only-I | sed 's/ -I/:/g' | sed 's/^-I//')
+			if [[ $__cpath == "" ]]; then
+				continue
+			fi
+
+			if [[ -z $CPATH ]]; then
+				export CPATH=$__cpath
+			else
+				export CPATH=$CPATH:$__cpath
+			fi
+		done
 	'';
 
 	# For debugging stack traces.
