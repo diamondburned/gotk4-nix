@@ -5,14 +5,14 @@ let
 	sources = import ./nix/sources.nix {};
 	nixpkgs = import sources.nixpkgs {};
 
-	gotk4-nix = super.__gotk4-nix;
+	gotk4-nix = super.__gotk4-nix or {};
 	go_1_20 = super.go_1_20 or nixpkgs.go_1_20;
 
 in {
 	inherit go_1_20;
 
 	go =
-		if gotk4-nix.usePatchedGo then
+		if (gotk4-nix ? "usePatchedGo" && gotk4-nix.usePatchedGo) then
 			lib.warn "Using patched Go. Builds may be unstable and unreproducible. Only use this for development."
 				go_1_20.overrideAttrs (old: {
 					version = "${old.version}-cgo-parallel";
@@ -53,13 +53,6 @@ in {
 			subPackages = [ "cmd/staticcheck" ];
 		};
 	};
-
-	patchelfer = arch: interpreter: super.writeShellScriptBin
-		"patchelf-${arch}"
-		"${super.patchelf}/bin/patchelf --set-interpreter ${interpreter} \"$@\"";
-	# See https://sourceware.org/glibc/wiki/ABIList.
-	patchelf-x86_64  = self.patchelfer "x86_64"  "/lib64/ld-linux-x86-64.so.2";
-	patchelf-aarch64 = self.patchelfer "aarch64" "/lib/ld-linux-aarch64.so.1";
 
 	# CAUTION, for when I return: uncommenting these will trigger rebuilding a lot of Rust
 	# dependencies, which will take forever! Don't do it!

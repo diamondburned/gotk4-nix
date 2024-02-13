@@ -14,6 +14,7 @@ let src = import ./nix/sources.nix;
 			};
 		})
 		(import ./overlay.nix)
+		(import ./overlay-patchelf.nix)
 		(import "${src.gomod2nix}/overlay.nix")
 	];
 
