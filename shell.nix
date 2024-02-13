@@ -42,19 +42,17 @@ let
 	# For backwards compatibility.
 	gtk3 = pkgs.gtk3 or pkgs.gnome3.gtk;
 
-	baseDependencies = map
-		(pkg: if pkg ? "debug" then pkg.debug else pkg)
-		(with pkgs; [
-			# Bare minimum required.
-			atk
-			gtk3
-			gtk4
-			glib
-			graphene
-			gdk-pixbuf
-			gobject-introspection
-			librsvg
-		]);
+	baseDependencies = with pkgs; [
+		# Bare minimum required.
+		atk
+		gtk3
+		gtk4
+		glib
+		graphene
+		gdk-pixbuf
+		gobject-introspection
+		librsvg
+	];
 
 	buildInputs' = lib.unique ((with pkgs; [
 		pkg-config
@@ -152,7 +150,11 @@ in pkgs.mkShell ({
 	'';
 
 	# For debugging stack traces.
-	NIX_DEBUG_INFO_DIRS = lib.makeSearchPath "lib/debug" baseDependencies;
+	NIX_DEBUG_INFO_DIRS = lib.makeSearchPath
+		"lib/debug"
+		(map
+			(pkg: if pkg ? "debug" then pkg.debug else pkg)
+			baseDependencies);
 
 	CGO_ENABLED  = "1";
 
