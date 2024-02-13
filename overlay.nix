@@ -61,8 +61,6 @@ in {
 	patchelf-x86_64  = self.patchelfer "x86_64"  "/lib64/ld-linux-x86-64.so.2";
 	patchelf-aarch64 = self.patchelfer "aarch64" "/lib/ld-linux-aarch64.so.1";
 
-	webp-pixbuf-loader = super.callPackage ./packages/webp-pixbuf-loader.nix {};
-
 	# CAUTION, for when I return: uncommenting these will trigger rebuilding a lot of Rust
 	# dependencies, which will take forever! Don't do it!
 
