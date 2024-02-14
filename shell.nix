@@ -5,10 +5,6 @@
 	pkgs ? import ./pkgs.nix {},
 	shellHook ? "",
 	buildInputs ? (pkgs: []),
-	pixbufModules ? (pkgs: with pkgs;
-		[ librsvg ]
-		++ (if pkgs ? "webp-pixbuf-loader" then [ webp-pixbuf-loader ] else [])
-	),
 	clangdPackages ? (pkgs: with pkgs; [ gtk4 glib ]),
 	...
 }@args':
@@ -141,10 +137,6 @@ in pkgs.mkShell ({
 
 		export XDG_DATA_DIRS=$XDG_DATA_DIRS:${hicolor-icon-theme}/share:${adwaita-icon-theme}/share
 		export XDG_DATA_DIRS=$XDG_DATA_DIRS:$GSETTINGS_SCHEMAS_PATH
-		export GDK_PIXBUF_MODULE_FILE=${
-			lib.makeSearchPath
-				"lib/gdk-pixbuf-2.0/2.10.0/loaders.cache"
-				(pixbufModules pkgs)}
 
 		${shellHook}
 	'';
