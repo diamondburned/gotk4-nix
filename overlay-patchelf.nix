@@ -4,7 +4,7 @@ self: super: {
 		''
 			${super.patchelf}/bin/patchelf \
 				--set-interpreter ${interpreter} \
-				--remove-rpath \ # clear RPATH, see https://github.com/diamondburned/dissent/issues/255
+				--set-rpath "" \ # clear RPATH, see https://github.com/diamondburned/dissent/issues/255
 				"$@"
 		'';
 	# See https://sourceware.org/glibc/wiki/ABIList.
