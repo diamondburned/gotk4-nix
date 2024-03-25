@@ -56,6 +56,8 @@ let
 		go
 		gopls
 		gotools
+
+		clang-tools # for clang-format
 		clangd
 
 		git
