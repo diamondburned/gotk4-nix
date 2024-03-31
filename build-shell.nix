@@ -4,7 +4,7 @@ self:
 	base ? { pname = "gotk4-dev-shell"; },
 	pkgs,
 	shellHook ? "",
-	buildInputs ? (pkgs: []),
+	buildInputs ? [],
 	clangdPackages ? (pkgs: with pkgs; [ gtk4 glib ]),
 	...
 }@args':
@@ -54,7 +54,7 @@ let
 		patchelf-aarch64
 	])
 	++ (baseDependencies)
-	++ (buildInputs pkgs)
+	++ (buildInputs)
 	++ (baseBuildInputs pkgs)
 	++ (baseNativeBuildInputs pkgs));
 
