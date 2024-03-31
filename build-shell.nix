@@ -139,4 +139,8 @@ in pkgs.mkShell ({
 	# See https://github.com/NixOS/nix/issues/395.
 	TMP    = "/tmp";
 	TMPDIR = "/tmp";
+
+	passthru = {
+		inherit baseDependencies;
+	};
 } // args)
