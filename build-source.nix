@@ -1,14 +1,14 @@
+self:
+
 {
 	base,
-	pkgs ? import ./pkgs.nix { useFetched = true; },
+	pkgs,
 	version ? null,
-	pkgOpts ? {},
+	overridePackageAttrs ? (old: {}),
 }:
 
-let args = builtins.removeAttrs args [ "pkgs" "base" "rev" ];
-	util = import ./util.nix pkgs;
-
-	version' = util.optionalVersion base version;
+let
+	version' = self.lib.optionalVersion base version;
 	name = "${base.pname}-source-${version'}";
 
 	src = builtins.filterSource
@@ -16,13 +16,13 @@ let args = builtins.removeAttrs args [ "pkgs" "base" "rev" ];
 			# Only accept files and directories
 			(type == "directory" || type == "regular") &&
 			# Filter out hidden files and directories
-			(! pkgs.lib.hasPrefix "." (builtins.baseNameOf path))
+			(!pkgs.lib.hasPrefix "." (builtins.baseNameOf path))
 		)
 		base.src;
 
-	package = import ./package.nix (pkgOpts // {
+	package = (import ./package.nix {
 		inherit base pkgs version;
-	});
+	}).overrideAttrs overridePackageAttrs;
 
 	vendor = pkgs.linkFarm "${name}-vendor" [
 		{ name = "vendor"; path = package.vendorEnv; }
@@ -35,8 +35,9 @@ let args = builtins.removeAttrs args [ "pkgs" "base" "rev" ];
 			vendor
 		];
 	};
-
-in pkgs.runCommandLocal name {
+in
+	
+pkgs.runCommandLocal name {
 	buildInputs = with pkgs; [
 		coreutils
 		zstd

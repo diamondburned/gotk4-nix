@@ -1,8 +1,8 @@
+self:
+
 {
-	base ? {
-		pname = "gotk4-unnamed";
-	},
-	pkgs ? import ./pkgs.nix {},
+	base ? { pname = "gotk4-dev-shell"; },
+	pkgs,
 	shellHook ? "",
 	buildInputs ? (pkgs: []),
 	clangdPackages ? (pkgs: with pkgs; [ gtk4 glib ]),
@@ -10,33 +10,22 @@
 }@args':
 
 let
-	src = import ./src.nix;
+	inherit (pkgs.extend self.overlays.patchelf)
+		patchelf-x86_64
+		patchelf-aarch64;
+
 	lib = pkgs.lib;
 
 	args = builtins.removeAttrs args' [
 		"base"
 		"pkgs"
+		"shellHook"
 		"buildInputs"
 		"clangdPackages"
 	];
 
-	# minitime is a mini-output time wrapper.
-	minitime = pkgs.writeShellScriptBin "minitime"
-		"command time --format $'%C -> %es\\n' \"$@\"";
-
-	generate = pkgs.writeShellScriptBin "generate"
-		"go generate";
-
-	build = pkgs.writeShellScriptBin "build" ''
-		cd pkg
-		go build -v ./...
-	'';
-
 	baseBuildInputs = base.buildInputs or (_: []);
 	baseNativeBuildInputs = base.nativeBuildInputs or (_: []);
-
-	# For backwards compatibility.
-	gtk3 = pkgs.gtk3 or pkgs.gnome3.gtk;
 
 	baseDependencies = with pkgs; [
 		# Bare minimum required.
@@ -61,12 +50,6 @@ let
 		clangd
 
 		git
-
-		# Tools
-		minitime
-		generate
-		build
-
 		patchelf-x86_64
 		patchelf-aarch64
 	])

@@ -1,8 +1,8 @@
-self: super: {
-	patchelfer = arch: interpreter: super.writeShellScriptBin
+final: prev: {
+	patchelfer = arch: interpreter: prev.writeShellScriptBin
 		"patchelf-${arch}"
-		"${super.patchelf}/bin/patchelf --set-interpreter ${interpreter} \"$@\"";
+		"${prev.patchelf}/bin/patchelf --set-interpreter ${interpreter} \"$@\"";
 	# See https://sourceware.org/glibc/wiki/ABIList.
-	patchelf-x86_64  = self.patchelfer "x86_64"  "/lib64/ld-linux-x86-64.so.2";
-	patchelf-aarch64 = self.patchelfer "aarch64" "/lib/ld-linux-aarch64.so.1";
+	patchelf-x86_64  = final.patchelfer "x86_64"  "/lib64/ld-linux-x86-64.so.2";
+	patchelf-aarch64 = final.patchelfer "aarch64" "/lib/ld-linux-aarch64.so.1";
 }

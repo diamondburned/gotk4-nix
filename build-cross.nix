@@ -1,80 +1,20 @@
+self:
+
 {
-	base,
-	pkgs ? import ./pkgs.nix { useFetched = true; },
-	tags ? [],
+	pkgs,
 	target ? null,
 	targets ? [ "x86_64" "aarch64" ],
-	...
-}@args':
+	overridePackageAttrs ? (old: {}),
 
-with pkgs.lib;
-with builtins;
+	base,
+	tags ? [],
+	version ? null,
+	usePatchedGo ? false,
+}:
 
-let args = builtins.removeAttrs args' [
-		"base" "pkgs" "tags" "target" "targets"
-	];
-
-	withPatchelf = patchelf: pkg: pkg.overrideAttrs (old: {
-		postInstall = (old.postInstall or "") + ''
-			${patchelf}/bin/${patchelf.name} $out/bin/*
-		'';
-	});
-
-	output = name: packages: pkgs.runCommandLocal name {
-		# Join the object of name to packages into a line-delimited list of strings.
-		src = foldr
-			(a: b: a + "\n" + b) ""
-			(mapAttrsToList
-				(name: pkg: with pkg;
-					builtins.trace
-						"build-cross: will make ${name}.tar.zst"
-						(name + " " + outPath)
-				)
-				packages
-			);
-		buildInputs = with pkgs; [
-			coreutils
-			zstd
-		];
-		passthru = {
-			outputs = packages;
-		};
-	} ''
-		mkdir -p $out
-
-		IFS=$'\n' readarray pkgs <<< "$src"
-
-		for pkg in "''${pkgs[@]}"; {
-			[[ "$pkg" == "" || "$pkg" == $'\n' ]] && continue
-
-			read -r name path <<< "$pkg"
-
-			# Fix issue #3 permission too strict.
-			tar --zstd -vchf "$out/$name.tar.zst" -C "$path" --mode "a+rwX" .
-		}
-	'';
-
-	linuxPkgs = {
-		x86_64 = import ./package-cross.nix ({
-			inherit base pkgs tags;
-			GOOS        = "linux";
-			GOARCH      = "amd64";
-			system      = "x86_64-linux";
-			crossSystem = "x86_64-unknown-linux-gnu";
-		} // args);
-		aarch64 = import ./package-cross.nix ({
-			inherit base pkgs tags;
-			GOOS        = "linux";
-			GOARCH      = "arm64";
-			system      = "aarch64-linux";
-			crossSystem = "aarch64-unknown-linux-gnu";
-		} // args);
-	};
-
-	patchelfer = {
-		x86_64  = pkgs.patchelf-x86_64;
-		aarch64 = pkgs.patchelf-aarch64;
-	};
+let
+	inherit (self) inputs;
+	lib = pkgs.lib;
 
 	targets' =
 		if target != null
@@ -84,19 +24,47 @@ let args = builtins.removeAttrs args' [
 			else [ target ]
 		else targets;
 
-	outputs' = forEach targets' (target:
-		let pkg  = linuxPkgs.${target};
-			name = concatStringsSep "-" (with pkg; [
-				pname
-				GOOS
-				GOARCH
-				version
-			]);
-		in {
-			"${name}" = withPatchelf patchelfer.${target} pkg;
-		}
-	);
+	outputs = map
+		(target: (import ./build-cross-package.nix self {
+			inherit pkgs base tags version usePatchedGo;
+			targetSystem = target;
+			setInterpreter = true;
+		}).overrideAttrs overridePackageAttrs)
+		(targets');
+in
 
-	outputs = foldl (a: b: a // b) {} outputs';
+pkgs.runCommandLocal "${base.pname}-cross" {
+	# OUTPUTS = <<EOF
+	# drv-name drv-path
+	# drv-name drv-path
+	# EOF
+	OUTPUTS = lib.concatMapStringsSep "\n"
+		(output:
+			builtins.trace
+				"build-cross: will make ${output.name}.tar.zst"
+				"${output.name} ${output.outPath}")
+		(outputs);
 
-in output "${base.pname}-cross" outputs
+	buildInputs = with pkgs; [
+		coreutils
+		zstd
+	];
+
+	passthru = {
+		inherit outputs;
+	};
+} ''
+	mkdir -p $out
+
+	IFS=$'\n' readarray pkgs <<< "$src"
+
+	for pkg in "''${pkgs[@]}"; do
+		if [[ "$pkg" == "" || "$pkg" == $'\n' ]]; then
+			continue
+		fi
+
+		read -r name path <<< "$pkg"
+		# Fix issue #3 permission too strict.
+		tar --zstd -vchf "$out/$name.tar.zst" -C "$path" --mode "a+rwX" .
+	done
+''
