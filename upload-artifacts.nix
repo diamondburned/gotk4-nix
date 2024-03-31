@@ -1,15 +1,17 @@
-{ ... }:
+{ pkgs }:
 
-let pkgs = import ./pkgs.nix {};
+let
 	mksh = name: text: pkgList: pkgs.writeShellScript name ''
 		for deriv in ${pkgs.lib.concatStringsSep " " pkgList}; {
 			export PATH="$deriv/bin:$PATH"
 		}
 
-		${text}
+		exec ${text}
 	'';
-
-in mksh "upload-artifacts"
+in
+	
+# TODO: port this to pkgs.writeShellApplication
+mksh "upload-artifacts"
 	"${./upload-artifacts.sh} \"$@\""
 	(with pkgs; [
 		jq
