@@ -4,34 +4,34 @@ self:
 	base,
 	pkgs,
 	version ? "unknown",
+	cleanSource ? false,
 	overridePackageAttrs ? (old: {}),
 }:
 
 let
 	name = "${base.pname}-source-${version}";
 
-	src = builtins.filterSource
-		(path: type:
-			# Only accept files and directories
-			(type == "directory" || type == "regular") &&
-			# Filter out hidden files and directories
-			(!pkgs.lib.hasPrefix "." (builtins.baseNameOf path))
-		)
-		base.src;
-
-	package = (import ./build-package.nix {
+	package = (import ./build-package.nix self {
 		inherit base pkgs version;
 	}).overrideAttrs overridePackageAttrs;
 
-	vendor = pkgs.linkFarm "${name}-vendor" [
-		{ name = "vendor"; path = package.vendorEnv; }
+	vendor =
+		package.goModules or
+		package.vendorEnv or
+		(throw "no pkg.goModules or pkg.vendorEnv found in package");
+
+	vendorDir = pkgs.linkFarm "${name}-vendor" [
+		{
+			name = "vendor";
+			path = vendor;
+		}
 	];
 
-	output = pkgs.symlinkJoin {
+	sourceDir = pkgs.symlinkJoin {
 		name = "${name}-output";
 		paths = [
-			src
-			vendor
+			base.src
+			vendorDir
 		];
 	};
 in
@@ -41,7 +41,9 @@ pkgs.runCommandLocal name {
 		coreutils
 		zstd
 	];
+	inherit sourceDir;
+	passthru.package = package;
 } ''
 	mkdir $out
-	tar --zstd -vchf "$out/${name}.tar.zst" -C "${output}" .
+	tar --zstd -vchf "$out/$name.tar.zst" -C "$sourceDir" .
 ''

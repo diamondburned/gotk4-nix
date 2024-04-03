@@ -1,8 +1,8 @@
 self:
 
 {
-	pkgs,
 	base,
+	pkgs,
 	tags ? [],
 	version ? "unknown",
 }:
