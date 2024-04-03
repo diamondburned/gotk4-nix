@@ -20,7 +20,7 @@ let
 		else builderPkgs.buildGoModule;
 in
 
-builder rec {
+builder {
 	inherit (base) pname src;
 	inherit (pkgs) go;
 
