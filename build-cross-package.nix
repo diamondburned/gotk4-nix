@@ -15,17 +15,16 @@ let
 	inherit (self) inputs;
 	lib = pkgs.lib;
 
-	overlays =
+	pkgsHost = pkgs.appendOverlays (
 		[
-			self.inputs.gomod2nix.overlays.default
 			self.overlays.patchelf
-		]
-		++ (if usePatchedGo then [ self.overlays.patchedGo ] else []);
+		] ++ (if usePatchedGo then [ self.overlays.patchedGo ] else [])
+	);
 
 	# pkgsTarget is the set of packages that are meant to run on the target system.
 	# Packages within this set can only be executed on that target system.
 	pkgsTarget = import pkgs.path {
-		inherit overlays;
+		overlays = [ self.inputs.gomod2nix.overlays.default ];
 		system = targetSystem;
 	};
 
@@ -33,8 +32,8 @@ let
 	# for the specified cross-system. Packages within this set can run on the host, but extra
 	# packages are included for building for target.
 	pkgsCross = import pkgs.path {
-		inherit overlays;
 		inherit (pkgs) system;
+		overlays = [ self.inputs.gomod2nix.overlays.default ];
 		crossSystem.config = pkgsTarget.stdenv.targetPlatform.config;
  	};
 
@@ -42,8 +41,8 @@ let
 		let
 			name = "patchelf-${targetSystem}";
 		in
-			if builtins.hasAttr name pkgsCross
-			then builtins.getAttr name pkgsCross
+			if builtins.hasAttr name pkgsHost
+			then builtins.getAttr name pkgsHost
 			else throw "no supported patchelf for target ${targetSystem}";
 
 	GOOS = pkgsTarget.stdenv.targetPlatform.parsed.kernel.name;
@@ -72,7 +71,7 @@ let
 
 	# Build using the host's Go toolchain.
 	# Go is already capable of cross-compiling, we just need to set the right environment variables.
-	go = pkgs.go // {
+	go = pkgsHost.go // {
 		inherit GOOS GOARCH;
 	};
 
@@ -117,7 +116,7 @@ builder {
 		hicolor-icon-theme
 	]);
 
-	nativeBuildInputs = (baseNativeBuildInputs pkgs) ++ (with pkgs; [
+	nativeBuildInputs = (baseNativeBuildInputs pkgsHost) ++ (with pkgsHost; [
 		pkg-config
 		git # for Go
 	]);
