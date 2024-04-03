@@ -19,7 +19,7 @@ let
 		)
 		base.src;
 
-	package = (import ./package.nix {
+	package = (import ./build-package.nix {
 		inherit base pkgs version;
 	}).overrideAttrs overridePackageAttrs;
 
