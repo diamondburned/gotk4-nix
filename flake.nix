@@ -17,7 +17,7 @@
 			mkPackageCross = import ./build-cross.nix self;
 
 			mkLib = { base, pkgs }: nixpkgs.lib.mapAttrs
-				(name: fn: { base, pkgs, ... }@args: fn (args // { inherit base pkgs; }))
+				(name: fn: { ... }@args: fn (args // { inherit base pkgs; }))
 				{
 					inherit (self.lib)
 						mkShell
