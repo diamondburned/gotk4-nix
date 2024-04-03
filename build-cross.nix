@@ -33,7 +33,7 @@ let
 		(targets');
 in
 
-pkgs.runCommandLocal "${base.pname}-cross" {
+pkgs.runCommandLocal "${base.pname}-cross-${version}" {
 	# OUTPUTS = <<EOF
 	# drv-name drv-path
 	# drv-name drv-path
@@ -41,10 +41,7 @@ pkgs.runCommandLocal "${base.pname}-cross" {
 	OUTPUTS = lib.concatMapStringsSep "\n"
 		(o:
 			let
-				name = lib.concatStringsSep "" [
-					base.pname "-" o.GOOS "-" o.GOARCH
-					(if o.version != "" then "-" else "") o.version
-				];
+				name = "${base.pname}-${o.GOOS}-${o.GOARCH}";
 			in
 			builtins.trace
 				"build-cross: will make ${name}.tar.zst"
