@@ -7,7 +7,7 @@ self:
 
 	base,
 	tags ? [],
-	version ? null,
+	version ? "unknown",
 	usePatchedGo ? false,
 }:
 
@@ -42,8 +42,8 @@ let
 		let
 			name = "patchelf-${targetSystem}";
 		in
-			if pkgsCross ? name
-			then builtins.getAttr pkgsCross name
+			if builtins.hasAttr name pkgsCross
+			then builtins.getAttr name pkgsCross
 			else throw "no supported patchelf for target ${targetSystem}";
 
 	GOOS = pkgsTarget.stdenv.targetPlatform.parsed.kernel.name;
@@ -83,7 +83,8 @@ let
 
 	buildGoApplication = (pkgs.callPackage "${inputs.gomod2nix}/builder" {
 		inherit (pkgsCross) stdenv;
-	}.buildGoApplication);
+		gomod2nix = inputs.gomod2nix.packages.${pkgs.system}.default;
+	}).buildGoApplication;
 
 	builder = if (base ? modules)
 		then buildGoApplication
@@ -92,18 +93,15 @@ let
 	baseSubPackages = base.subPackages or [ "." ];
 	baseBuildInputs = base.buildInputs or (_: []);
 	baseNativeBuildInputs = base.nativeBuildInputs or (_: []);
+in
+
+builder {
+	inherit go tags;
+	inherit (base) pname src;
 
 	version =
 		with lib;
-		with self.lib;
-		(optionalVersion base version) +
-		(optionalString (tags != []) "-${concatStringsSep "+" tags}");
-	
-in builder {
-	inherit go tags version;
-	inherit (base) pname src;
-
-	name = "${base.pname}-${GOOS}-${GOARCH}-${version}";
+		version + (optionalString (tags != []) "-${concatStringsSep "+" tags}");
 
 	CGO_ENABLED = "1";
 
@@ -126,9 +124,11 @@ in builder {
 
 	subPackages = [ baseSubPackages ];
 
-	buildFlags = "-buildmode pie";
-	
+	hardeningEnable = [ "pie" ];
+
 	preFixup =
+		with lib;
+		with builtins;
 		with base.files;
 		optionalString (hasAttr "desktop" base.files) ''
 			mkdir -p $out/share/applications/
@@ -144,7 +144,7 @@ in builder {
 		'';
 
 	postInstall = lib.optionalString setInterpreter ''
-		${patchelf}/bin/patchelf $out/bin/*
+		${lib.getExe patchelf} $out/bin/*
 	'';
 
 	doCheck = false;

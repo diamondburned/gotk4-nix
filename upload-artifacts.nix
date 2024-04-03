@@ -9,7 +9,7 @@ let
 		exec ${text}
 	'';
 in
-	
+
 # TODO: port this to pkgs.writeShellApplication
 mksh "upload-artifacts"
 	"${./upload-artifacts.sh} \"$@\""

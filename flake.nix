@@ -11,15 +11,6 @@
 
 	outputs = { self, nixpkgs, flake-utils, ... }: {
 		lib = {
-			optionalVersion = base: version:
-				if (version != null) then
-					version
-				else
-					if (base ? version && base.version != null) then
-						base.version
-					else
-						"unknown";
-
 			mkShell = import ./build-shell.nix self;
 			mkSource = import ./build-source.nix self;
 			mkPackage = import ./build-package.nix self;
@@ -30,9 +21,19 @@
 			patchelf = import ./overlay-patchelf.nix;
 			patchedGo = import ./overlay-patched-go.nix;
 		};
-	} // (flake-utils.lib.eachDefaultSystem (system: {
-		packages.upload-artifacts = import ./upload-artifacts.nix {
+	} // (flake-utils.lib.eachDefaultSystem (system:
+		let
 			pkgs = nixpkgs.legacyPackages.${system};
-		};
-	}));
+		in
+		{
+			packages = {
+				upload-artifacts = import ./upload-artifacts.nix {
+					inherit pkgs;
+				};
+				inherit (pkgs.extend self.overlays.patchelf)
+					patchelf-x86_64-linux
+					patchelf-aarch64-linux;
+			};
+		}
+	));
 }

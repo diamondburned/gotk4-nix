@@ -2,12 +2,12 @@ final: prev:
 
 let
 	lib = prev.lib;
-in 
-	
+in
+
 lib.warn
 "gotk4-nix: using patched Go 1.20!! Builds *WILL* be unstable and unreproducible. Only use this" +
 "strictly for development purposes."
-	
+
 {
 	go_1_20 = prev.go_1_20.overrideAttrs (old: {
 		version = "${old.version}-cgo-parallel";

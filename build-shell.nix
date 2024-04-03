@@ -50,8 +50,8 @@ let
 		clangd
 
 		git
-		patchelf-x86_64
-		patchelf-aarch64
+		patchelf-x86_64-linux
+		patchelf-aarch64-linux
 	])
 	++ (baseDependencies)
 	++ (buildInputs)

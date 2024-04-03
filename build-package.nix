@@ -4,7 +4,7 @@ self:
 	pkgs,
 	base,
 	tags ? [],
-	version ? null,
+	version ? "unknown",
 }:
 
 let
@@ -18,16 +18,15 @@ let
 	builder = if (base ? modules)
 		then builderPkgs.buildGoApplication
 		else builderPkgs.buildGoModule;
+in
 
-in builder {
+builder rec {
 	inherit (base) pname src;
 	inherit (pkgs) go;
 
 	version =
 		with pkgs.lib;
-		with self.lib;
-		(optionalVersion base version) +
-		(optionalString (tags != []) "-${concatStringsSep "+" tags}");
+		version + (optionalString (tags != []) "-${concatStringsSep "+" tags}");
 
 	modules = if base ? modules then base.modules else null;
 	vendorSha256 = if base ? vendorSha256 then base.vendorSha256 else null;
@@ -49,9 +48,11 @@ in builder {
 
 	subPackages = baseSubPackages;
 
-	buildFlags = "-buildmode pie";
+	hardeningEnable = [ "pie" ];
 
 	preFixup =
+		with pkgs.lib;
+		with builtins;
 		with base.files;
 		optionalString (hasAttr "desktop" base.files) ''
 			mkdir -p $out/share/applications/

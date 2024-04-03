@@ -3,12 +3,12 @@ self:
 {
 	pkgs,
 	target ? null,
-	targets ? [ "x86_64" "aarch64" ],
+	targets ? [ "x86_64-linux" "aarch64-linux" ],
 	overridePackageAttrs ? (old: {}),
 
 	base,
 	tags ? [],
-	version ? null,
+	version ? "unknown",
 	usePatchedGo ? false,
 }:
 
@@ -39,10 +39,13 @@ pkgs.runCommandLocal "${base.pname}-cross" {
 	# drv-name drv-path
 	# EOF
 	OUTPUTS = lib.concatMapStringsSep "\n"
-		(output:
+		(o:
+			let
+				name = "${base.pname}-${o.GOOS}-${o.GOARCH}-${o.version}";
+			in
 			builtins.trace
-				"build-cross: will make ${output.name}.tar.zst"
-				"${output.name} ${output.outPath}")
+				"build-cross: will make ${name}.tar.zst"
+				"${name} ${o}")
 		(outputs);
 
 	buildInputs = with pkgs; [
@@ -51,13 +54,12 @@ pkgs.runCommandLocal "${base.pname}-cross" {
 	];
 
 	passthru = {
-		inherit outputs;
+		builtOutputs = outputs;
 	};
 } ''
 	mkdir -p $out
 
-	IFS=$'\n' readarray pkgs <<< "$src"
-
+	IFS=$'\n' readarray pkgs <<< "$OUTPUTS"
 	for pkg in "''${pkgs[@]}"; do
 		if [[ "$pkg" == "" || "$pkg" == $'\n' ]]; then
 			continue

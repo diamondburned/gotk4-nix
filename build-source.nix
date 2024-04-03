@@ -3,13 +3,12 @@ self:
 {
 	base,
 	pkgs,
-	version ? null,
+	version ? "unknown",
 	overridePackageAttrs ? (old: {}),
 }:
 
 let
-	version' = self.lib.optionalVersion base version;
-	name = "${base.pname}-source-${version'}";
+	name = "${base.pname}-source-${version}";
 
 	src = builtins.filterSource
 		(path: type:
@@ -36,7 +35,7 @@ let
 		];
 	};
 in
-	
+
 pkgs.runCommandLocal name {
 	buildInputs = with pkgs; [
 		coreutils
