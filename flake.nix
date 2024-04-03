@@ -15,6 +15,16 @@
 			mkSource = import ./build-source.nix self;
 			mkPackage = import ./build-package.nix self;
 			mkPackageCross = import ./build-cross.nix self;
+
+			mkLib = { base, pkgs }: nixpkgs.lib.mapAttrs
+				(name: fn: { base, pkgs, ... }@args: fn (args // { inherit base pkgs; }))
+				{
+					inherit (self.lib)
+						mkShell
+						mkSource
+						mkPackage
+						mkPackageCross;
+				};
 		};
 
 		overlays = {
