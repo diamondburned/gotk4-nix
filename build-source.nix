@@ -9,7 +9,7 @@ self:
 }:
 
 let
-	name = "${base.pname}-source-${version}";
+	name = "${base.pname}-source";
 
 	package = (import ./build-package.nix self {
 		inherit base pkgs version;
@@ -36,7 +36,7 @@ let
 	};
 in
 
-pkgs.runCommandLocal name {
+pkgs.runCommandLocal "${name}-${version}" {
 	buildInputs = with pkgs; [
 		coreutils
 		zstd
