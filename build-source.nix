@@ -42,8 +42,9 @@ pkgs.runCommandLocal "${name}-${version}" {
 		zstd
 	];
 	inherit sourceDir;
+	tarballName = name;
 	passthru.package = package;
 } ''
 	mkdir $out
-	tar --zstd -vchf "$out/$name.tar.zst" -C "$sourceDir" .
+	tar --zstd -vchf "$out/$tarballName.tar.zst" -C "$sourceDir" .
 ''
