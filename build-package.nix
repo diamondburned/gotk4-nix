@@ -5,6 +5,7 @@ self:
 	pkgs,
 	tags ? [],
 	version ? "unknown",
+	overridePackageAttrs ? (old: {}),
 }:
 
 let
@@ -20,7 +21,7 @@ let
 		else builderPkgs.buildGoModule;
 in
 
-builder {
+(builder {
 	inherit (base) pname src;
 	inherit (pkgs) go;
 
@@ -68,4 +69,4 @@ builder {
 		'';
 
 	doCheck = false;
-}
+}).overrideAttrs overridePackageAttrs
