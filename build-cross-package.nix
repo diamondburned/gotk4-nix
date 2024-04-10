@@ -140,6 +140,10 @@ builder {
 		optionalString (hasAttr "service" base.files) ''
 			mkdir -p $out/share/dbus-1/services/
 			cp ${service.path} $out/share/dbus-1/services/${service.name}
+		'' +
+		optionalString (hasAttr "icons" base.files) ''
+			mkdir -p $out/share/icons/
+			cp -r ${icons.path}/* $out/share/icons/
 		'';
 
 	postInstall = lib.optionalString setInterpreter ''
