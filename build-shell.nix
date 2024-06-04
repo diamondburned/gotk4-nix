@@ -46,8 +46,8 @@ let
 		gopls
 		gotools
 
-		clang-tools # for clang-format
 		clangd
+		clang-tools # for clang-format
 
 		git
 		patchelf-x86_64-linux
