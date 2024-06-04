@@ -87,7 +87,7 @@ EOF
 		with pkgs;
 		with lib;
 		''
-			for path in ${concatStringsSep " " (map (pkg: pkg.outPath) (clangdPackages pkgs))}; do
+			for path in ${concatStringsSep " " (map (pkg: pkg.dev.outPath) (clangdPackages pkgs))}; do
 				for file in $path/lib/pkgconfig/*.pc; do
 					[[ ! -f $file ]] && continue
 					packages+=( $(basename $file .pc) )
