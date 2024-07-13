@@ -10,10 +10,12 @@ self:
 }@args':
 
 let
-	pkgs = pkgs.extend self.overlays.patchelf;
+	pkgs' = pkgs;
 in
 
 let
+	pkgs = pkgs'.extend self.overlays.patchelf;
+
 	inherit (pkgs.extend self.overlays.patchelf)
 		patchelf-x86_64
 		patchelf-aarch64;
