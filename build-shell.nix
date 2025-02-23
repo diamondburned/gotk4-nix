@@ -14,15 +14,13 @@ self:
     ]
   ),
   go ? pkgs.go,
+  gopls ? pkgs.gopls,
+  gotools ? pkgs.gotools,
   ...
 }@args':
 
 let
   pkgs' = pkgs;
-
-  buildGoModule = pkgs.buildGoModule.override {
-    inherit go;
-  };
 in
 
 let
@@ -62,9 +60,6 @@ let
     (with pkgs; [
       pkg-config
 
-      (gopls.override { inherit buildGoModule; })
-      (gotools.override { inherit buildGoModule; })
-
       clangd
       clang-tools # for clang-format
 
@@ -72,7 +67,11 @@ let
       patchelf-x86_64-linux
       patchelf-aarch64-linux
     ])
-    ++ [ go ]
+    ++ [
+      go
+      gopls
+      gotools
+    ]
     ++ (baseDependencies)
     ++ (buildInputs)
     ++ (baseBuildInputs pkgs)
