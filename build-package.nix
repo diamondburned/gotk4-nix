@@ -17,7 +17,11 @@ let
   baseNativeBuildInputs = base.nativeBuildInputs or (_: [ ]);
 
   builderPkgs = pkgs.extend inputs.gomod2nix.overlays.default;
-  builder = if (base ? modules) then builderPkgs.buildGoApplication else builderPkgs.buildGoModule;
+  builder =
+    if (base ? modules) then
+      (builderPkgs.buildGoApplication) # go inherited below
+    else
+      (builderPkgs.buildGoModule.override { inherit go; });
 in
 
 (builder {
@@ -57,21 +61,21 @@ in
     with builtins;
     with base.files;
     optionalString (hasAttr "desktop" base.files) ''
-      			mkdir -p $out/share/applications/
-      			cp ${desktop.path} $out/share/applications/${desktop.name}
-      		''
+      mkdir -p $out/share/applications/
+      cp ${desktop.path} $out/share/applications/${desktop.name}
+    ''
     + optionalString (hasAttr "logo" base.files) ''
-      			mkdir -p $out/share/icons/hicolor/256x256/apps/
-      			cp ${logo.path} $out/share/icons/hicolor/256x256/apps/${logo.name}
-      		''
+      mkdir -p $out/share/icons/hicolor/256x256/apps/
+      cp ${logo.path} $out/share/icons/hicolor/256x256/apps/${logo.name}
+    ''
     + optionalString (hasAttr "service" base.files) ''
-      			mkdir -p $out/share/dbus-1/services/
-      			cp ${service.path} $out/share/dbus-1/services/${service.name}
-      		''
+      mkdir -p $out/share/dbus-1/services/
+      cp ${service.path} $out/share/dbus-1/services/${service.name}
+    ''
     + optionalString (hasAttr "icons" base.files) ''
-      			mkdir -p $out/share/icons/
-      			cp -r ${icons.path}/* $out/share/icons/
-      		'';
+      mkdir -p $out/share/icons/
+      cp -r ${icons.path}/* $out/share/icons/
+    '';
 
   doCheck = false;
 }).overrideAttrs

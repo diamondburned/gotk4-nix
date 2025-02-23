@@ -19,6 +19,10 @@ self:
 
 let
   pkgs' = pkgs;
+
+  buildGoModule = pkgs.buildGoModule.override {
+    inherit go;
+  };
 in
 
 let
@@ -58,8 +62,8 @@ let
     (with pkgs; [
       pkg-config
 
-      gopls
-      gotools
+      (gopls.override { inherit buildGoModule; })
+      (gotools.override { inherit buildGoModule; })
 
       clangd
       clang-tools # for clang-format
