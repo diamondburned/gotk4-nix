@@ -84,7 +84,7 @@ let
     pkgs.runCommandLocal "gotk4-env"
       {
         buildInputs = buildInputs';
-        nativeBuildInputs = buildInputs' ++ (with pkgs; [ wrapGAppsHook ]);
+        nativeBuildInputs = buildInputs' ++ [ (pkgs.wrapGAppsHook4 or pkgs.wrapGAppsHook3 or pkgs.wrapGAppsHook) ];
       }
       ''
         cat<<-'EOF' > ./dump

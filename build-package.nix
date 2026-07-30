@@ -47,7 +47,7 @@ in
   nativeBuildInputs =
     baseNativeBuildInputs pkgs
     ++ (with pkgs; [
-      wrapGAppsHook
+      (pkgs.wrapGAppsHook4 or pkgs.wrapGAppsHook3 or pkgs.wrapGAppsHook)
       pkg-config
       git # for Go
     ]);
