@@ -60,6 +60,7 @@ let
     (with pkgs; [
       pkg-config
 
+      clang
       clangd
       clang-tools # for clang-format
 
@@ -151,6 +152,8 @@ pkgs.mkShell (
 
         export XDG_DATA_DIRS=$XDG_DATA_DIRS:${hicolor-icon-theme}/share:${adwaita-icon-theme}/share
         export XDG_DATA_DIRS=$XDG_DATA_DIRS:$GSETTINGS_SCHEMAS_PATH
+
+        export CC=clang
 
         ${shellHook}
       '';
