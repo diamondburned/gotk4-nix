@@ -54,8 +54,6 @@ in
 
   subPackages = baseSubPackages;
 
-  hardeningEnable = [ "pie" ];
-
   preFixup =
     with pkgs.lib;
     with builtins;

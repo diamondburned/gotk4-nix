@@ -129,8 +129,6 @@ builder {
 
   subPackages = [ baseSubPackages ];
 
-  hardeningEnable = [ "pie" ];
-
   preFixup =
     with lib;
     with builtins;
