@@ -106,6 +106,11 @@ builder {
 
   CGO_ENABLED = "1";
 
+  # The libraries come from pkgsTarget and find their own dependencies through
+  # their RUNPATH, which a cross linker ignores. Point it at the target's GCC
+  # runtime libraries, e.g. libssp, so that it can resolve them.
+  CGO_LDFLAGS = "-Wl,-rpath-link,${lib.getLib pkgsTarget.stdenv.cc.cc}/lib";
+
   modules = if (base ? modules) then base.modules else null;
   vendorSha256 = if (base ? vendorSha256) then base.vendorSha256 else null;
 
