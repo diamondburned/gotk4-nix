@@ -111,6 +111,15 @@ builder {
   # runtime libraries, e.g. libssp, so that it can resolve them.
   CGO_LDFLAGS = "-Wl,-rpath-link,${lib.getLib pkgsTarget.stdenv.cc.cc}/lib";
 
+  # gomod2nix copies vendor/ into the source, which Go counts as a change to
+  # the Git tree and stamps the build as modified. Hide it from Git.
+  preBuild = ''
+    if [ -d .git ]; then
+      mkdir -p .git/info
+      echo /vendor/ >> .git/info/exclude
+    fi
+  '';
+
   modules = if (base ? modules) then base.modules else null;
   vendorSha256 = if (base ? vendorSha256) then base.vendorSha256 else null;
 
