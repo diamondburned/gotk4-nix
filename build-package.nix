@@ -16,6 +16,15 @@ let
   baseBuildInputs = base.buildInputs or (_: [ ]);
   baseNativeBuildInputs = base.nativeBuildInputs or (_: [ ]);
 
+  # gdk-pixbuf's setup hook only picks a single package's loaders.cache, so
+  # merge the loaders ourselves to get both SVG and WebP.
+  pixbufLoaders = pkgs.gnome._gdkPixbufCacheBuilder_DO_NOT_USE {
+    extraLoaders = with pkgs; [
+      librsvg
+      webp-pixbuf-loader
+    ];
+  };
+
   builderPkgs = pkgs.extend inputs.gomod2nix.overlays.default;
   builder =
     if (base ? modules) then
@@ -53,6 +62,11 @@ in
     ]);
 
   subPackages = baseSubPackages;
+
+  # In postInstall to run before gappsWrapperArgsHook.
+  postInstall = ''
+    export GDK_PIXBUF_MODULE_FILE=${pixbufLoaders}
+  '';
 
   preFixup =
     with pkgs.lib;

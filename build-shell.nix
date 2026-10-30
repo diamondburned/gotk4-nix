@@ -44,6 +44,14 @@ let
   baseBuildInputs = base.buildInputs or (_: [ ]);
   baseNativeBuildInputs = base.nativeBuildInputs or (_: [ ]);
 
+  # See build-package.nix.
+  pixbufLoaders = pkgs.gnome._gdkPixbufCacheBuilder_DO_NOT_USE {
+    extraLoaders = with pkgs; [
+      librsvg
+      webp-pixbuf-loader
+    ];
+  };
+
   baseDependencies = with pkgs; [
     # Bare minimum required.
     atk
@@ -154,6 +162,7 @@ pkgs.mkShell (
         export XDG_DATA_DIRS=$XDG_DATA_DIRS:$GSETTINGS_SCHEMAS_PATH
 
         export CC=clang
+        export GDK_PIXBUF_MODULE_FILE=${pixbufLoaders}
 
         ${shellHook}
       '';
